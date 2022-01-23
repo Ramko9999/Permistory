@@ -3,7 +3,7 @@ import { Session } from "../../interfaces/Session";
 import "./Home.css";
 import StackedBarGraph from "../stacked_bar_graph";
 import PieChart from "../pie_chart";
-import ParentSize from '@visx/responsive/lib/components/ParentSize';
+import ParentSize from "@visx/responsive/lib/components/ParentSize";
 
 import mockData from "../../utils/mock";
 import {
@@ -21,12 +21,12 @@ export enum Device {
 }
 
 let location_data = [
-  {host : "google.com", count: 10},
-  {host : "amazon.com", count: 30},
-  {host : "facebook.com", count: 10},
-  {host : "twitch.com", count: 5},
-  {host : "ebay.com", count: 15},
-]
+  { host: "google.com", count: 10 },
+  { host: "amazon.com", count: 30 },
+  { host: "facebook.com", count: 10 },
+  { host: "twitch.com", count: 5 },
+  { host: "ebay.com", count: 15 },
+];
 
 const permissions = [
   { name: "Camera", type: Device.CAMERA },
@@ -44,9 +44,9 @@ function Home() {
   const [rangeIdx, setRangeIdx] = useState<number>(0);
 
   const [data, setData] = useState<Session[]>(mockData);
-  
+
   //const [data, setData] = useState<Session[]>([]);
-  
+
   useEffect(() => {
     UsageService.getUsageData(permissions[permissionIdx].type).then(
       (newData) => {
@@ -127,70 +127,90 @@ function Home() {
             <button onClick={onPermissionSwitchHandler}>
               {permissions[permissionIdx].name}
             </button>
-            <button onClick={onRangeSwitchHandler}>{ranges[rangeIdx].name}</button>
+            <button onClick={onRangeSwitchHandler}>
+              {ranges[rangeIdx].name}
+            </button>
           </div>
         </div>
         <div className="stats">
           <div className="stat-container">
             <div className="stat-label">Last Used</div>
             <div className="stat">
-              {getLastUsed(data, permissions[permissionIdx].type)}
+              {permissionIdx == 2
+                ? "4 hrs ago"
+                : getLastUsed(data, permissions[permissionIdx].type)}
             </div>
           </div>
           <div className="stat-container">
-
-        <div className="stat-label">{permissionIdx == 2 ? "Total Hits" : "Total Hours Used"}</div>
+            <div className="stat-label">
+              {permissionIdx == 2 ? "Total Location Intents" : "Total Hours Used"}
+            </div>
             <div className="stat">
-              {getTotalTime(data, permissions[permissionIdx].type)}
+              {permissionIdx == 2
+                ? "70"
+                : getTotalTime(data, permissions[permissionIdx].type)}
             </div>
           </div>
         </div>
 
-        {permissionIdx == 2 ? (<div className="location-container">
-          <h2 className="chart-title">Location Hits</h2>
-          <div className="location-chart-parent"><PieChart locationData={location_data}/></div>
-          </div>): null}
-
-        {permissionIdx != 2 ? (<div style={{ marginTop: "2rem" }}>
-          <ParentSize>
-            {({ width, height }) => (
-              <StackedBarGraph
-                width={width}
-                height={400}
-                data={filterData()}
-                range={ranges[rangeIdx].range}
-                permission={permissions[permissionIdx]}
-              />
-            )}
-          </ParentSize>
-        </div>) : null}
-
-        <div className="apps-list">
-          <div className="app-row">
-            <div>Website</div>
-            <div>Time</div>
+        {permissionIdx == 2 ? (
+          <div className="location-container">
+            <h2 className="chart-title">Location Hits</h2>
+            <div className="location-chart-parent">
+              <PieChart locationData={location_data} />
+            </div>
           </div>
-          {getAggregatedHostUsage(data, permissions[permissionIdx].type)
-            .sort((a: any, b: any) => b.totalDuration - a.totalDuration)
-            .map(
-              ({
-                host,
-                totalDuration,
-              }: {
-                host: string;
-                totalDuration: number;
-              }) => (
-                <div className="app-row" key={host}>
-                  <div className="app-name">
-                  <img src={`https://${host}/favicon.ico`} className="favicon"/>
-                  <div> {host} </div>{" "}
+        ) : null}
+
+        {permissionIdx != 2 ? (
+          <div style={{ marginTop: "2rem" }}>
+            <ParentSize>
+              {({ width, height }) => (
+                <StackedBarGraph
+                  width={width}
+                  height={400}
+                  data={filterData()}
+                  range={ranges[rangeIdx].range}
+                  permission={permissions[permissionIdx]}
+                />
+              )}
+            </ParentSize>
+          </div>
+        ) : null}
+        {permissionIdx !== 2 && (
+          <div className="apps-list">
+          <h2 className="chart-title">
+            {`Total ${permissions[permissionIdx].name} Usage`}
+            </h2>            
+            <div className="app-row">
+              <div>Website</div>
+              <div>Time</div>
+            </div>
+            {getAggregatedHostUsage(data, permissions[permissionIdx].type)
+              .sort((a: any, b: any) => b.totalDuration - a.totalDuration)
+              .map(
+                ({
+                  host,
+                  totalDuration,
+                }: {
+                  host: string;
+                  totalDuration: number;
+                }) => (
+                  <div className="app-row" key={host}>
+                    <div className="app-name">
+                      <img
+                        src={`https://${host}/favicon.ico`}
+                        className="favicon"
+                      />
+                      <div> {host} </div>{" "}
+                    </div>
+
+                    <div>{getMessageFromMillis(totalDuration)}</div>
                   </div>
-  
-                  <div>{getMessageFromMillis(totalDuration)}</div>
-                </div>
-              )
-            )}
-        </div>
+                )
+              )}
+          </div>
+        )}
       </div>
     </>
   );

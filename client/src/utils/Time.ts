@@ -90,7 +90,7 @@ export const getMessageFromTime = (
       if (minutes < 1 || minutes === NaN) {
         return `A few moments`;
       }
-      return `${roundMetric(minutes)} mins`;
+      return `${Math.floor(minutes)} mins`;
     } else {
       return `${roundMetric(hours)} hrs`;
     }

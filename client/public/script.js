@@ -23,11 +23,16 @@ navigator.mediaDevices.getUserMedia = function getUserMedia(constraints) {
   });
 }
 
+let geolocation = navigator.geolocation.getCurrentPosition;
+  navigator.geolocation.getCurrentPosition = function (success, error, options) {
+  geolocation.apply(navigator.geolocation, [success, error, options]);
+  notifyLocationIntent();
+};
+
 const attachAudioUsage = (stream) => {
   const sessionId = generateSessionId(10);
   const onStopAudioCallback = getOnStopCallback(stream.getAudioTracks().length, sessionId, "AUDIO");
   for (const track of stream.getAudioTracks()) {
-    console.log(track);
     let prevTrackStop = track.stop;
     track.stop = function onStop() {
       prevTrackStop.apply(track, []);
@@ -91,6 +96,7 @@ const getDatetime = () => {
 
 const notifyUsageStart = (device, sessionId) => {
   return window.postMessage({
+    message_type: "MEDIA_INTENT",
     type: "BEGIN",
     session: sessionId,
     device: device,
@@ -101,12 +107,23 @@ const notifyUsageStart = (device, sessionId) => {
 
 const notifyUsageEnd = (device, sessionId) => {
   return window.postMessage({
+    message_type: "MEDIA_INTENT",
     type: "FINISH",
     session: sessionId,
     device: device,
     timestamp: getDatetime(),
     host: getHost()
   }, "*");
+}
+
+
+const notifyLocationIntent = () => {
+  return window.postMessage({
+    message_type: "LOCATION_INTENT",
+    device: "LOCATION",
+    timestamp: getDatetime(),
+    host: getHost()
+  })
 }
 
 const getHost = () => {
