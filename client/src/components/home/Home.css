@@ -83,3 +83,14 @@ button {
   text-transform: uppercase;
   border-collapse: collapse;
 }
+
+.app-name {
+  display: flex;
+  flex-direction: row;
+  gap: 0.8rem;
+}
+
+.favicon {
+  width:16px;
+  object-fit: contain;
+}

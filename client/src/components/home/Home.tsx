@@ -166,7 +166,11 @@ function Home() {
                 totalDuration: number;
               }) => (
                 <div className="app-row" key={host}>
+                  <div className="app-name">
+                  <img src={`https://${host}/favicon.ico`} className="favicon"/>
                   <div> {host} </div>{" "}
+                  </div>
+  
                   <div>{getMessageFromMillis(totalDuration)}</div>
                 </div>
               )
