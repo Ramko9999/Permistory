@@ -43,14 +43,7 @@ export const getTotalHours = (data: Session[]) => {
   return getTotalHoursFromMillis(millis);
 };
 
-export const getTotalHoursFromMillis = (millis: number) => {
-  const hours = millis / (1000 * 3600);
-  if(hours < 0){
-    return hours.toFixed(2).toString();
-  }
 
-  if (hours < 10){
-    return hours.toFixed(1).toString();
-  }
-  return hours.toString();
+export const getTotalHoursFromMillis = (millis: number) => {
+  return millis / (1000 * 3600);
 }

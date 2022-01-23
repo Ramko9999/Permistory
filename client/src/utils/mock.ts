@@ -1,45 +1,68 @@
-
 const mockData = [
-    {
-      host: "omegle.com",
-      startingTimestamp: 1642926142000,
-     endingTimestamp: 1642926202000,
-      duration: 60000,
-      session: "string",
-      device: "AUDIO"
-    },
-    {
-      host: "microsoft.com",
-      startingTimestamp: 1642998173000,
-     endingTimestamp: 1643003673000,
-      duration: 5500000,
-      session: "string",
-      device: "VIDEO"
-    },
-    {
-      host: "facebook.com",
-      startingTimestamp: 1642926294000,
-     endingTimestamp: 1642937672000,
-      duration: 11378000,
-      session: "string",
-      device: "AUDIO"
-    },
-    {
-      host: "instagram.com",
-      startingTimestamp: 1642974243000,
-     endingTimestamp: 1642974863000,
-      duration: 620000,
-      session: "string",
-      device: "AUDIO"
-    },
-    {
-      host: "youtube.com",
-      startingTimestamp: 1642935843000,
-     endingTimestamp: 1642973083000,
-      duration: 37240000,
-      session: "string",
-      device: "VIDEO"
-    }
-  ];
+  {
+    host: "instagram.com",
+    startingTimestamp: 1642680000000,
+    endingTimestamp: 1642681800000,
+    duration: 1800000,
+    session: "string",
+    device: "AUDIO",
+  },
+  {
+    host: "vimeo.com",
+    startingTimestamp: 1642678200000,
+    endingTimestamp:1642682700000,
+    duration: 4500000,
+    session: "string",
+    device: "AUDIO",
+  },
+  {
+    host: "omegle.com",
+    startingTimestamp: 1642682700000,
+    endingTimestamp: 1642682940000,
+    duration: 240000,
+    session: "string",
+    device: "AUDIO",
+  },
+  {
+    host: "twitter.com",
+    startingTimestamp: 1642697340000,
+    endingTimestamp: 1642697700000,
+    duration: 360000,
+    session: "string",
+    device: "AUDIO",
+  },
+  {
+    host: "microsoft.com",
+    startingTimestamp: 1642612560000,
+    endingTimestamp: 1642613220000,
+    duration: 660000,
+    session: "string",
+    device: "VIDEO",
+  },
+  {
+    host: "facebook.com",
+    startingTimestamp: 1641835440000,
+    endingTimestamp: 1641836040000,
+    duration: 600000,
+    session: "string",
+    device: "AUDIO",
+  },
+  {
+    host: "spotify.com",
+    startingTimestamp: 1642259880000,
+    endingTimestamp: 1642263480000,
+    duration: 3600000,
+    session: "string",
+    device: "AUDIO",
+  },
+  {
+    host: "youtube.com",
+    startingTimestamp: 1642435500000,
+    endingTimestamp: 1642442700000,
+    duration: 7200000,
+    session: "string",
+    device: "VIDEO",
+  },
+];
 
   export default mockData;

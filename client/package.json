@@ -12,7 +12,9 @@
     "@types/node": "^12.0.0",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
+    "@visx/visx": "^2.7.0",
     "axios": "^0.24.0",
+    "d3-time-format": "^4.1.0",
     "http-status-codes": "^2.1.4",
     "prism-react-renderer": "^1.2.1",
     "react": "^17.0.2",
@@ -51,6 +53,7 @@
     ]
   },
   "devDependencies": {
+    "@types/d3-time-format": "^4.0.0",
     "@types/react-router-dom": "^5.3.2",
     "@types/react-test-renderer": "^17.0.1",
     "@types/styled-components": "^5.1.19"

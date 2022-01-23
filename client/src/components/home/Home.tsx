@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { Session } from "../../interfaces/Session";
 import "./Home.css";
+import StackedBarGraph from "../stacked_bar_graph";
+import ParentSize from '@visx/responsive/lib/components/ParentSize';
+
 import mockData from "../../utils/mock";
 import { getLastUsed, getTotalHours, getTotalHoursFromMillis } from "../../utils/Time";
 import UsageService from "../../services/Usage";
 
-enum device {
+export enum Device {
   CAMERA = "VIDEO",
   MICROPHONE = "AUDIO",
   LOCATION = "LOCATION",
 }
 
 const permissions = [
-  { name: "Camera", type: device.CAMERA },
-  { name: "Microphone", type: device.MICROPHONE },
-  { name: "Location", type: device.LOCATION },
+  { name: "Camera", type: Device.CAMERA },
+  { name: "Microphone", type: Device.MICROPHONE },
+  { name: "Location", type: Device.LOCATION },
 ];
 
 const ranges = ["Last Week", "Last Month", "Last Year"];
@@ -23,10 +26,12 @@ function Home() {
   const [permissionIdx, setPermissionIdx] = useState<number>(0);
   const [rangeIdx, setRangeIdx] = useState<number>(0);
 
+  //const [data, setData] = useState<Session[]>(mockData);
+  
   const [data, setData] = useState<Session[]>([]);
-
+  
   useEffect(() => {
-    UsageService.getUsageData().then(setData);
+    UsageService.getUsageData(permissions[0].type).then(setData);
   }, [])
 
   const onPermissionSwitchHandler = () => {
@@ -63,8 +68,18 @@ function Home() {
         aggregatedDataByHost.push({host, totalDuration});
     });
 
-    console.log(aggregatedDataByHost);
     return aggregatedDataByHost;
+  }
+
+  const displayHours = (hours : number) => {
+      if (hours < 0) {
+          return hours.toFixed(2).toString();
+      }
+      if (hours < 10){
+        return hours.toFixed(1).toString();
+      }
+
+      return hours.toString();
   }
   
   return (
@@ -89,18 +104,23 @@ function Home() {
           </div>
           <div className="stat-container">
             <div className="stat-label">Total Hours Used</div>
-            <div className="stat">{getTotalHours(data)}</div>
+            <div className="stat">{displayHours(getTotalHours(data))}</div>
           </div>
         </div>
+
+        <div style={{marginTop : "2rem"}}> 
+        <ParentSize>{({ width, height }) => <StackedBarGraph width={width} height={400} data={data}/>}</ParentSize>
+        </div>
+        
         <div className="apps-list">
           <div className="app-row">
             <div>Website</div>
             <div>Hours</div>
           </div>
-          {getAggregatedHostUsage(data).map(({host, totalDuration} : {host: string, totalDuration: number}) => (
+          {getAggregatedHostUsage(data).sort((a : any, b : any) => b.totalDuration - a.totalDuration).map(({host, totalDuration} : {host: string, totalDuration: number}) => (
             <div className="app-row" key={host}>
               <div> {host} </div>{" "}
-              <div>{getTotalHoursFromMillis(totalDuration)}</div>
+              <div>{displayHours(getTotalHoursFromMillis(totalDuration))}</div>
             </div>
           ))}
         </div>

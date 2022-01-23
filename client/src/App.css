@@ -6,14 +6,8 @@
 }
 
 .main-section {
-  height: 85vh;
-  max-height: 85vh;
-}
-
-.footer-section {
-  height: 5vh;
-  max-height: 5vh;
-  display: flex;
+  height: 90vh;
+  max-height: 90vh;
 }
 
 @media only screen and (min-width: 1200px) {
@@ -39,4 +33,13 @@
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
   }
+}
+
+.app {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.app::-webkit-scrollbar {
+  display: none;
 }

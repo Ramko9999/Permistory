@@ -14,8 +14,7 @@ function App() {
         <div className="app">
           <Navbar />
           <div className="main-section">
-            <Home/>
-          <AppRouter />
+          <Home/>
           </div>
           <div className="footer-section"></div>
         </div>
