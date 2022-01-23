@@ -1,0 +1,112 @@
+.menu-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+button {
+  border: none;
+  outline: none;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  height: max-content;
+  width: max-content;
+  background-color: var(--section-bg);
+  color: var(--primary);
+  border-radius: 3px;
+}
+
+select {
+  appearance: none;
+  border-radius: 3px;
+  border: none;
+  outline: none;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  height: max-content;
+  width: max-content;
+  background-color: var(--section-bg);
+  color: var(--primary);
+}
+
+select::-ms-expand {
+  display: none;
+}
+
+option {
+  outline: none;
+  border-radius: 3px;
+  border: none;
+  outline: none;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  height: max-content;
+  width: max-content;
+  background-color: var(--section-bg);
+  color: var(--primary);
+}
+
+.select-containers {
+  display: flex;
+  gap: 1rem;
+}
+
+.stats {
+  display: flex;
+  flex-direction: row;
+  margin-top: 1rem;
+  gap: 2rem;
+}
+
+.stat {
+  margin-top: 0.2rem;
+  font-weight: bold;
+  font-size: 3rem;
+  color: var(--accent);
+}
+
+.stat-container {
+  background-color: var(--section-bg);
+  height: max-content;
+  max-width: calc(50% - 3rem);
+  min-width: calc(50% - 3rem);
+  border-radius: 3px;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.stat-label {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.last-used-tag {
+  font-size: 1.5rem;
+}
+
+
+.apps-list {
+  padding: 1rem 0rem;
+  margin-top: 2rem;
+  background-color: var(--section-bg);
+  border-radius: 3px;
+  max-height: 20vh;
+  overflow-y: scroll;
+}
+
+.app-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0.3rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: monospace;
+  border-collapse: collapse;
+}

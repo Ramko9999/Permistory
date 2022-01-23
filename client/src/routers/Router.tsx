@@ -3,7 +3,7 @@ import {baseRoutes_} from "../constants/Route";
 
 import CommonRoute from "./CommonRoute";
 
-import Home from "../components/home"
+import Home from "../components/home/Home"
 
 function AppRouter() {
   return (

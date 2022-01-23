@@ -6,8 +6,8 @@
 }
 
 .main-section {
-  height: 80vh;
-  max-height: 80vh;
+  height: 85vh;
+  max-height: 85vh;
 }
 
 .footer-section {
@@ -18,9 +18,9 @@
 
 @media only screen and (min-width: 1200px) {
   .app {
-    min-width: 90vw;
-    max-width: 90vw;
-    margin: 0rem 5vw;
+    min-width: 40vw;
+    max-width: 40vw;
+    margin: 0rem 30vw;
   }
 }
 

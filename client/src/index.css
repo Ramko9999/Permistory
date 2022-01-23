@@ -54,23 +54,9 @@ a:hover {
   color: var(--accent);
 }
 
-button {
-  padding: 0.5rem 0.75rem;
-  font-family: monospace;
-  font-size: 1.125rem;
-  font-weight: 600;
-  background-color: var(--bg);
-  color: var(--primary);
-  outline: none;
-  border: 0.3rem solid var(--primary);
-  height: min-content;
-  width: max-content;
-}
-
 button:hover {
   cursor: pointer;
   color: var(--accent);
-  transition: background 0.5s ease;
 }
 
 button:disabled {
