@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Session } from "../../interfaces/Session";
 import "./Home.css";
 import StackedBarGraph from "../stacked_bar_graph";
+import PieChart from "../pie_chart";
 import ParentSize from '@visx/responsive/lib/components/ParentSize';
 
 import mockData from "../../utils/mock";
@@ -13,6 +14,14 @@ export enum Device {
   MICROPHONE = "AUDIO",
   LOCATION = "LOCATION",
 }
+
+let location_data = [
+  {host : "google.com", count: 10},
+  {host : "amazon.com", count: 30},
+  {host : "facebook.com", count: 10},
+  {host : "twitch.com", count: 5},
+  {host : "ebay.com", count: 15},
+]
 
 const permissions = [
   { name: "Camera", type: Device.CAMERA },
@@ -26,9 +35,9 @@ function Home() {
   const [permissionIdx, setPermissionIdx] = useState<number>(0);
   const [rangeIdx, setRangeIdx] = useState<number>(0);
 
-  //const [data, setData] = useState<Session[]>(mockData);
+  const [data, setData] = useState<Session[]>(mockData);
   
-  const [data, setData] = useState<Session[]>([]);
+  //const [data, setData] = useState<Session[]>([]);
   
   useEffect(() => {
     UsageService.getUsageData(permissions[0].type).then(setData);
@@ -103,14 +112,19 @@ function Home() {
             </div>
           </div>
           <div className="stat-container">
-            <div className="stat-label">Total Hours Used</div>
+            <div className="stat-label">{permissionIdx == 2 ? "Total Hits" : "Total Hours Used"}</div>
             <div className="stat">{displayHours(getTotalHours(data))}</div>
           </div>
         </div>
-
-        <div style={{marginTop : "2rem"}}> 
+        
+         {permissionIdx == 2 ? (<div className="location-container">
+          <h2 className="chart-title">Location Hits</h2>
+          <div className="location-chart-parent"><PieChart locationData={location_data}/></div>
+          </div>): null}
+        
+        {permissionIdx != 2 ? (<div style={{marginTop : "2rem"}}> 
         <ParentSize>{({ width, height }) => <StackedBarGraph width={width} height={400} data={data}/>}</ParentSize>
-        </div>
+        </div>):null}
         
         <div className="apps-list">
           <div className="app-row">
