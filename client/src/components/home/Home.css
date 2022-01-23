@@ -16,39 +16,9 @@ button {
   background-color: var(--section-bg);
   color: var(--primary);
   border-radius: 3px;
+  box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06);
 }
 
-select {
-  appearance: none;
-  border-radius: 3px;
-  border: none;
-  outline: none;
-  padding: 0.5rem;
-  font-size: 0.8rem;
-  font-weight: bold;
-  height: max-content;
-  width: max-content;
-  background-color: var(--section-bg);
-  color: var(--primary);
-}
-
-select::-ms-expand {
-  display: none;
-}
-
-option {
-  outline: none;
-  border-radius: 3px;
-  border: none;
-  outline: none;
-  padding: 0.5rem;
-  font-size: 0.8rem;
-  font-weight: bold;
-  height: max-content;
-  width: max-content;
-  background-color: var(--section-bg);
-  color: var(--primary);
-}
 
 .select-containers {
   display: flex;
@@ -79,6 +49,7 @@ option {
   padding-bottom: 1rem;
   padding-left: 1rem;
   padding-right: 1rem;
+  box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06);
 }
 
 .stat-label {
@@ -99,6 +70,7 @@ option {
   max-height: 20vh;
   overflow-y: scroll;
   margin-bottom: 2rem;
+  box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06);
 }
 
 .app-row {
@@ -106,8 +78,8 @@ option {
   flex-direction: row;
   justify-content: space-between;
   padding: 0.3rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
   border-collapse: collapse;
 }

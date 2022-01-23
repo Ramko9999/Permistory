@@ -1,16 +1,17 @@
-import React from 'react';
-import { BarStack } from '@visx/shape';
-import { SeriesPoint } from '@visx/shape/lib/types';
-import { Group } from '@visx/group';
-import { Grid } from '@visx/grid';
-import { AxisBottom } from '@visx/axis';
-import { scaleBand, scaleLinear, scaleOrdinal } from '@visx/scale';
-import { timeParse, timeFormat } from 'd3-time-format';
-import { useTooltip, useTooltipInPortal, defaultStyles } from '@visx/tooltip';
-import { localPoint } from '@visx/event';
-import {Session} from "../../interfaces/Session";
-import ColorHash from '../../services/ColorHash';
-import {getTotalHoursFromMillis} from "../../utils/Time";
+import React from "react";
+import { BarStack } from "@visx/shape";
+import { SeriesPoint } from "@visx/shape/lib/types";
+import { Group } from "@visx/group";
+import { Grid } from "@visx/grid";
+import { AxisBottom } from "@visx/axis";
+import { scaleBand, scaleLinear, scaleOrdinal } from "@visx/scale";
+import { timeParse, timeFormat } from "d3-time-format";
+import { useTooltip, useTooltipInPortal, defaultStyles } from "@visx/tooltip";
+import { localPoint } from "@visx/event";
+import { Session } from "../../interfaces/Session";
+import ColorHash from "../../services/ColorHash";
+import { getTotalHoursFromMillis } from "../../utils/Time";
+import { Device } from "../home/Home";
 
 type TooltipData = {
   bar: SeriesPoint<any>;
@@ -29,90 +30,101 @@ export type BarStackProps = {
   data: Session[];
   margin?: { top: number; right: number; bottom: number; left: number };
   events?: boolean;
+  range: number;
+  permission: { name: string; type: Device };
 };
 
-const purple1 = '#6c5efb';
-const purple2 = '#c998ff';
-export const purple3 = '#a44afe';
-export const background = 'var(--section-bg)';
+const purple1 = "#6c5efb";
+const purple2 = "#c998ff";
+export const purple3 = "#a44afe";
+const strokeColor = "var(--primary)";
+export const background = "var(--section-bg)";
 const defaultMargin = { top: 40, right: 0, bottom: 0, left: 0 };
 const tooltipStyles = {
   ...defaultStyles,
   minWidth: 60,
-  backgroundColor: 'rgba(0,0,0,0.9)',
-  color: 'white',
+  backgroundColor: "rgba(0,0,0,0.9)",
+  color: "white",
 };
 
-
-const parseDate = timeParse('%Y-%m-%d');
-const format = timeFormat('%b %d');
+const parseDate = timeParse("%Y-%m-%d");
+const format = timeFormat("%b %d");
 const formatDate = (date: string) => format(parseDate(date) as Date);
 
-const getDate = (usageDataForDay : any) => usageDataForDay.date;
+const getDate = (usageDataForDay: any) => usageDataForDay.date;
 
 let tooltipTimeout: number;
 
-const getAggregatedDataByDay = (data: Session[]) => {
+const getAggregatedDataByDay = (data: Session[], range: number) => {
   const getDateAggregationFormat = (date: Date) => {
-
     const padDateComponent = (dateComp: number) => {
-       if (dateComp < 10){
-         return '0' + dateComp;
-       }
-       return dateComp;
-    }
-    return `${date.getFullYear()}-${padDateComponent(date.getMonth() + 1)}-${padDateComponent(date.getDate())}`
-  }
+      if (dateComp < 10) {
+        return "0" + dateComp;
+      }
+      return dateComp;
+    };
+    return `${date.getFullYear()}-${padDateComponent(
+      date.getMonth() + 1
+    )}-${padDateComponent(date.getDate())}`;
+  };
 
   const hosts = new Set<string>();
-  data.forEach(({host}) => hosts.add(host));
+  data.forEach(({ host }) => hosts.add(host));
   data = data.sort((a, b) => a.startingTimestamp - b.startingTimestamp);
 
-  const dateUsage : any = {};
+  const dateUsage: any = {};
 
-  const populateHosts = (formattedDate : string, hosts : Set<String>) => {
-    if (!(formattedDate in dateUsage)){
-      const hostDurations : any = {};
+  const populateHosts = (formattedDate: string, hosts: Set<String>) => {
+    if (!(formattedDate in dateUsage)) {
+      const hostDurations: any = {};
       hosts.forEach((host) => {
         hostDurations[host as string] = 0;
-      })
+      });
       dateUsage[formattedDate] = hostDurations;
     }
- }
+  };
 
-  let minDay = null;
-  let maxDay = null;
-  for(const {startingTimestamp, endingTimestamp, host, duration} of data){
-      const startDate = new Date(startingTimestamp);
-      if (!minDay){
-        minDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-      }
-      const endDate = new Date(endingTimestamp);
-      maxDay = endDate;
-      if(startDate.getDate() !== endDate.getDate()){
-        const formattedStart = getDateAggregationFormat(startDate);
-        const formattedEnd = getDateAggregationFormat(endDate);
-        const startOfNewDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 0, 0, 0, 0);
+  let minDay = new Date();
+  minDay.setDate(minDay.getDate() - range);
+  let maxDay = new Date();
+  for (const { startingTimestamp, endingTimestamp, host, duration } of data) {
+    const startDate = new Date(startingTimestamp);
 
-        populateHosts(formattedStart, hosts);
-        populateHosts(formattedEnd, hosts);
-        
-        dateUsage[formattedStart][host] += startOfNewDay.getTime() - startDate.getTime();
-        dateUsage[formattedEnd][host] += endDate.getTime() - startOfNewDay.getTime();
-      } else {
-        const formattedDay = getDateAggregationFormat(startDate);
+    const endDate = new Date(endingTimestamp);
 
-        populateHosts(formattedDay, hosts);
-        dateUsage[formattedDay][host] += duration;
-      }
+    if (startDate.getDate() !== endDate.getDate()) {
+      const formattedStart = getDateAggregationFormat(startDate);
+      const formattedEnd = getDateAggregationFormat(endDate);
+      const startOfNewDay = new Date(
+        endDate.getFullYear(),
+        endDate.getMonth(),
+        endDate.getDate(),
+        0,
+        0,
+        0,
+        0
+      );
+
+      populateHosts(formattedStart, hosts);
+      populateHosts(formattedEnd, hosts);
+
+      dateUsage[formattedStart][host] +=
+        startOfNewDay.getTime() - startDate.getTime();
+      dateUsage[formattedEnd][host] +=
+        endDate.getTime() - startOfNewDay.getTime();
+    } else {
+      const formattedDay = getDateAggregationFormat(startDate);
+
+      populateHosts(formattedDay, hosts);
+      dateUsage[formattedDay][host] += duration;
+    }
   }
 
-  
   const usageDataForDay = [];
-  while((minDay as Date).getTime() <= (maxDay as Date).getTime()){
+  while ((minDay as Date).getTime() <= (maxDay as Date).getTime()) {
     const formatMinDay = getDateAggregationFormat(minDay as Date);
     populateHosts(formatMinDay, hosts);
-    usageDataForDay.push({date: formatMinDay, ...dateUsage[formatMinDay]});
+    usageDataForDay.push({ date: formatMinDay, ...dateUsage[formatMinDay] });
     (minDay as Date).setDate((minDay as Date).getDate() + 1);
   }
 
@@ -122,39 +134,43 @@ const getAggregatedDataByDay = (data: Session[]) => {
   });
 
   let maxDuration = 0;
-  usageDataForDay.forEach((usage : any) => {
+  usageDataForDay.forEach((usage: any) => {
     Object.keys(usage).forEach((host: string) => {
-      if(hosts.has(host)){
+      if (hosts.has(host)) {
         maxDuration = Math.max(usage[host], maxDuration);
       }
-    }
-  )});
+    });
+  });
 
-  return {graphData: usageDataForDay, colorScale: getColorScale(hostList), 
-          minutesScale:getMinutesScale(maxDuration), dateScale: getDateScale(usageDataForDay), hosts: hostList}
-
-}
+  return {
+    graphData: usageDataForDay,
+    colorScale: getColorScale(hostList),
+    minutesScale: getMinutesScale(maxDuration),
+    dateScale: getDateScale(usageDataForDay),
+    hosts: hostList,
+  };
+};
 
 const getColorScale = (hosts: string[]) => {
   return scaleOrdinal<any, string>({
     domain: hosts,
-    range: hosts.map(ColorHash.getRGBColor)
+    range: hosts.map(ColorHash.getRGBColor),
   });
-}
+};
 
 const getMinutesScale = (maxRange: number) => {
-    return scaleLinear<number>({
-      domain: [0, maxRange],
-      nice: true,
-    });
-}
+  return scaleLinear<number>({
+    domain: [0, maxRange],
+    nice: true,
+  });
+};
 
 const getDateScale = (usageDataForDay: any) => {
   return scaleBand<string>({
-    domain: usageDataForDay.map((dayData : any) => dayData.date),
+    domain: usageDataForDay.map((dayData: any) => dayData.date),
     padding: 0.2,
   });
-}
+};
 
 export default function StackedBarGraph({
   width,
@@ -162,10 +178,17 @@ export default function StackedBarGraph({
   data,
   events = false,
   margin = defaultMargin,
+  permission,
+  range,
 }: BarStackProps) {
-  
-  const { tooltipOpen, tooltipLeft, tooltipTop, tooltipData, hideTooltip, showTooltip } =
-    useTooltip<TooltipData>();
+  const {
+    tooltipOpen,
+    tooltipLeft,
+    tooltipTop,
+    tooltipData,
+    hideTooltip,
+    showTooltip,
+  } = useTooltip<TooltipData>();
 
   const { containerRef, TooltipInPortal } = useTooltipInPortal({
     // TooltipInPortal is rendered in a separate child of <body /> and positioned
@@ -179,15 +202,30 @@ export default function StackedBarGraph({
   const xMax = width;
   const yMax = height - margin.top - 100;
 
-  const {graphData, dateScale, minutesScale, colorScale, hosts} = getAggregatedDataByDay(data);
+  const { graphData, dateScale, minutesScale, colorScale, hosts } =
+    getAggregatedDataByDay(data, range);
   dateScale.rangeRound([0, xMax]);
   minutesScale.range([yMax, 0]);
 
-
+  console.log("Render");
   return width < 10 ? null : (
-    <div style={{ position: 'relative' }}>
+    <div
+      style={{
+        position: "relative",
+        backgroundColor: background,
+        borderRadius: "3px",
+        boxShadow:
+          "0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06)",
+      }}
+    >
+      <h2
+        className="chart-title"
+        style={{ paddingTop: "1rem", paddingLeft: "1rem" }}
+      >
+        {`Daily ${permission.name} Usage`}
+      </h2>
       <svg ref={containerRef} width={width} height={height}>
-        <rect x={0} y={0} width={width} height={height} fill={background} rx={14} />
+        <rect x={0} y={0} width={width} height={height} fill={background} />
         <Grid
           top={margin.top}
           left={margin.left}
@@ -237,7 +275,7 @@ export default function StackedBarGraph({
                       });
                     }}
                   />
-                )),
+                ))
               )
             }
           </BarStack>
@@ -246,32 +284,38 @@ export default function StackedBarGraph({
           top={yMax + margin.top}
           scale={dateScale}
           tickFormat={formatDate}
-          stroke={purple3}
-          tickStroke={purple3}
+          stroke={strokeColor}
+          tickStroke={strokeColor}
           tickLabelProps={() => ({
-            fill: purple3,
+            fill: strokeColor,
             fontSize: 11,
-            textAnchor: 'middle',
+            textAnchor: "middle",
           })}
         />
       </svg>
       <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: margin.top / 2 - 10,
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          fontSize: '14px',
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          fontSize: "14px",
         }}
-      >
-      </div>
+      ></div>
       {tooltipOpen && tooltipData && (
-        <TooltipInPortal top={tooltipTop} left={tooltipLeft} style={tooltipStyles}>
+        <TooltipInPortal
+          top={tooltipTop}
+          left={tooltipLeft}
+          style={tooltipStyles}
+        >
           <div style={{ color: colorScale(tooltipData.key) }}>
             <strong>{tooltipData.key}</strong>
           </div>
-          <div>{Math.floor(tooltipData.bar.data[tooltipData.key] / (1000 * 60))} {" "}mins</div>
+          <div>
+            {Math.floor(tooltipData.bar.data[tooltipData.key] / (1000 * 60))}{" "}
+            mins
+          </div>
           <div>
             <small>{formatDate(getDate(tooltipData.bar.data))}</small>
           </div>

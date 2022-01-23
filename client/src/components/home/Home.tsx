@@ -2,10 +2,15 @@ import React, { useEffect, useState } from "react";
 import { Session } from "../../interfaces/Session";
 import "./Home.css";
 import StackedBarGraph from "../stacked_bar_graph";
-import ParentSize from '@visx/responsive/lib/components/ParentSize';
+import ParentSize from "@visx/responsive/lib/components/ParentSize";
 
 import mockData from "../../utils/mock";
-import { getLastUsed, getTotalHours, getTotalHoursFromMillis } from "../../utils/Time";
+import {
+  getLastUsed,
+  getTotalTime,
+  getTotalHoursFromMillis,
+  getMessageFromMillis,
+} from "../../utils/Time";
 import UsageService from "../../services/Usage";
 
 export enum Device {
@@ -20,19 +25,26 @@ const permissions = [
   { name: "Location", type: Device.LOCATION },
 ];
 
-const ranges = ["Last Week", "Last Month", "Last Year"];
+const ranges = [
+  { name: "Last Week", range: 7 },
+  { name: "Last Month", range: 30 },
+];
 
 function Home() {
   const [permissionIdx, setPermissionIdx] = useState<number>(0);
   const [rangeIdx, setRangeIdx] = useState<number>(0);
 
   //const [data, setData] = useState<Session[]>(mockData);
-  
-  const [data, setData] = useState<Session[]>([]);
-  
+
+  const [data, setData] = useState<Session[]>(mockData);
+
   useEffect(() => {
-    UsageService.getUsageData(permissions[0].type).then(setData);
-  }, [])
+    UsageService.getUsageData(permissions[permissionIdx].type).then(
+      (newData) => {
+        setData((prevData) => [...prevData, ...newData]);
+      }
+    );
+  }, [permissionIdx]);
 
   const onPermissionSwitchHandler = () => {
     if (permissionIdx === permissions.length - 1) {
@@ -51,37 +63,52 @@ function Home() {
   };
 
   if (data.length === 0) {
-      return (<div> We haven't tracked your data yet </div>);
+    return <div> We haven't tracked your data yet </div>;
   }
 
-  const getAggregatedHostUsage = (data: Session[]) => {
+  const getAggregatedHostUsage = (data: Session[], deviceType: Device) => {
     const aggregatedMap = new Map();
-    for(const session of data){
-        if(!aggregatedMap.has(session.host)){
-            aggregatedMap.set(session.host, 0);
+    for (const session of data) {
+      if (session.device === deviceType) {
+        if (!aggregatedMap.has(session.host)) {
+          aggregatedMap.set(session.host, 0);
         }
-        aggregatedMap.set(session.host, session.duration + aggregatedMap.get(session.host));
+        aggregatedMap.set(
+          session.host,
+          session.duration + aggregatedMap.get(session.host)
+        );
+      }
     }
 
-    let aggregatedDataByHost : any = [];
+    let aggregatedDataByHost: any = [];
     aggregatedMap.forEach((totalDuration, host) => {
-        aggregatedDataByHost.push({host, totalDuration});
+      aggregatedDataByHost.push({ host, totalDuration });
     });
 
     return aggregatedDataByHost;
-  }
+  };
 
-  const displayHours = (hours : number) => {
-      if (hours < 0) {
-          return hours.toFixed(2).toString();
-      }
-      if (hours < 10){
-        return hours.toFixed(1).toString();
-      }
+  const displayHours = (hours: number) => {
+    if (hours < 0) {
+      return hours.toFixed(2).toString();
+    }
+    if (hours < 10) {
+      return hours.toFixed(1).toString();
+    }
 
-      return hours.toString();
-  }
-  
+    return hours.toString();
+  };
+
+  const filterData = () => {
+    const filteredData = [];
+    for (const session of data) {
+      if (session.device === permissions[permissionIdx].type) {
+        filteredData.push(session);
+      }
+    }
+    return filteredData;
+  };
+
   return (
     <>
       <div className="container">
@@ -91,38 +118,59 @@ function Home() {
             <button onClick={onPermissionSwitchHandler}>
               {permissions[permissionIdx].name}
             </button>
-            <button onClick={onRangeSwitchHandler}>{ranges[rangeIdx]}</button>
+            <button onClick={onRangeSwitchHandler}>{ranges[rangeIdx].name}</button>
           </div>
         </div>
         <div className="stats">
           <div className="stat-container">
             <div className="stat-label">Last Used</div>
             <div className="stat">
-              {getLastUsed(data)}{" "}
-              <span className="last-used-tag"> ago </span>
+              {getLastUsed(data, permissions[permissionIdx].type)}
             </div>
           </div>
           <div className="stat-container">
-            <div className="stat-label">Total Hours Used</div>
-            <div className="stat">{displayHours(getTotalHours(data))}</div>
+            <div className="stat-label">Total Time Used</div>
+            <div className="stat">
+              {getTotalTime(data, permissions[permissionIdx].type)}
+            </div>
           </div>
         </div>
 
-        <div style={{marginTop : "2rem"}}> 
-        <ParentSize>{({ width, height }) => <StackedBarGraph width={width} height={400} data={data}/>}</ParentSize>
+        <div style={{ marginTop: "2rem" }}>
+          <ParentSize>
+            {({ width, height }) => (
+              <StackedBarGraph
+                width={width}
+                height={400}
+                data={filterData()}
+                range={ranges[rangeIdx].range}
+                permission={permissions[permissionIdx]}
+              />
+            )}
+          </ParentSize>
         </div>
-        
+
         <div className="apps-list">
           <div className="app-row">
             <div>Website</div>
-            <div>Hours</div>
+            <div>Time</div>
           </div>
-          {getAggregatedHostUsage(data).sort((a : any, b : any) => b.totalDuration - a.totalDuration).map(({host, totalDuration} : {host: string, totalDuration: number}) => (
-            <div className="app-row" key={host}>
-              <div> {host} </div>{" "}
-              <div>{displayHours(getTotalHoursFromMillis(totalDuration))}</div>
-            </div>
-          ))}
+          {getAggregatedHostUsage(data, permissions[permissionIdx].type)
+            .sort((a: any, b: any) => b.totalDuration - a.totalDuration)
+            .map(
+              ({
+                host,
+                totalDuration,
+              }: {
+                host: string;
+                totalDuration: number;
+              }) => (
+                <div className="app-row" key={host}>
+                  <div> {host} </div>{" "}
+                  <div>{getMessageFromMillis(totalDuration)}</div>
+                </div>
+              )
+            )}
         </div>
       </div>
     </>

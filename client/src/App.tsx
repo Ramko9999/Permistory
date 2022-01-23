@@ -16,7 +16,6 @@ function App() {
           <div className="main-section">
           <Home/>
           </div>
-          <div className="footer-section"></div>
         </div>
       </ThemeContext.Provider>
     </>

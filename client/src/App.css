@@ -5,16 +5,12 @@
   flex-direction: column;
 }
 
-.main-section {
-  height: 90vh;
-  max-height: 90vh;
-}
 
 @media only screen and (min-width: 1200px) {
   .app {
-    min-width: 40vw;
-    max-width: 40vw;
-    margin: 0rem 30vw;
+    min-width: 50vw;
+    max-width: 50vw;
+    padding: 0rem 25vw;
   }
 }
 
@@ -22,7 +18,7 @@
   .app {
     min-width: 95vw;
     max-width: 95vw;
-    margin: 0rem 2.5vw;
+    padding: 0rem 2.5vw;
   }
   .app::-webkit-scrollbar {
     display: none;
