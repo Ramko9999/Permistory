@@ -1,0 +1,27 @@
+.navbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  font-family: "Inter", sans-serif;
+  color: var(--accent);
+  max-height: 15vh;
+  min-height: 15vh;
+}
+
+.logo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.links {
+  display: flex;
+  column-gap: 1rem;
+  justify-content: space-around;
+}
+
+.icon {
+  cursor: pointer;
+}
