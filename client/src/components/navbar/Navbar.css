@@ -5,8 +5,8 @@
   align-items: center;
   font-family: "Inter", sans-serif;
   color: var(--accent);
-  max-height: 15vh;
-  min-height: 15vh;
+  max-height: 10vh;
+  min-height: 10vh;
 }
 
 .logo {

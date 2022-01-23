@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import React, { useContext } from "react";
 import * as Icon from "react-feather";
 import ThemeContext, { isDark, isLight, ThemeType } from "../../context/ThemeContext";
 import "./Navbar.css";
@@ -18,8 +18,8 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="logo">
-        <Icon.Shield />
-        <h1 className="title-header">{"permistory"}</h1>
+        <Icon.Shield className="logo-icon"/>
+        <h1 className="title-header">{"Permistory"}</h1>
       </div>
 
       <div className="links">
