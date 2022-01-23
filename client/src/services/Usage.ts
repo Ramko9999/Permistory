@@ -30,8 +30,9 @@ class UsageService {
                     }
                 }
             }
-            return allHosts;
         }
+
+        console.log(sessions);
         return sessions;
     }
 }

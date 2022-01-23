@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Session } from "../../interfaces/Session";
 import "./Home.css";
 import mockData from "../../utils/mock";
-import { getLastUsed, getTotalHours, getUnixToTime } from "../../utils/Time";
+import { getLastUsed, getTotalHours, getTotalHoursFromMillis } from "../../utils/Time";
+import UsageService from "../../services/Usage";
 
 enum device {
   CAMERA = "VIDEO",
@@ -22,6 +23,12 @@ function Home() {
   const [permissionIdx, setPermissionIdx] = useState<number>(0);
   const [rangeIdx, setRangeIdx] = useState<number>(0);
 
+  const [data, setData] = useState<Session[]>([]);
+
+  useEffect(() => {
+    UsageService.getUsageData().then(setData);
+  }, [])
+
   const onPermissionSwitchHandler = () => {
     if (permissionIdx === permissions.length - 1) {
       setPermissionIdx(0);
@@ -38,6 +45,28 @@ function Home() {
     }
   };
 
+  if (data.length === 0) {
+      return (<div> We haven't tracked your data yet </div>);
+  }
+
+  const getAggregatedHostUsage = (data: Session[]) => {
+    const aggregatedMap = new Map();
+    for(const session of data){
+        if(!aggregatedMap.has(session.host)){
+            aggregatedMap.set(session.host, 0);
+        }
+        aggregatedMap.set(session.host, session.duration + aggregatedMap.get(session.host));
+    }
+
+    let aggregatedDataByHost : any = [];
+    aggregatedMap.forEach((totalDuration, host) => {
+        aggregatedDataByHost.push({host, totalDuration});
+    });
+
+    console.log(aggregatedDataByHost);
+    return aggregatedDataByHost;
+  }
+  
   return (
     <>
       <div className="container">
@@ -54,13 +83,13 @@ function Home() {
           <div className="stat-container">
             <div className="stat-label">Last Used</div>
             <div className="stat">
-              {getLastUsed(mockData)}{" "}
+              {getLastUsed(data)}{" "}
               <span className="last-used-tag"> ago </span>
             </div>
           </div>
           <div className="stat-container">
             <div className="stat-label">Total Hours Used</div>
-            <div className="stat">{getTotalHours(mockData)}</div>
+            <div className="stat">{getTotalHours(data)}</div>
           </div>
         </div>
         <div className="apps-list">
@@ -68,10 +97,10 @@ function Home() {
             <div>Website</div>
             <div>Hours</div>
           </div>
-          {mockData.map((app) => (
-            <div className="app-row" key={app.host}>
-              <div> {app.host} </div>{" "}
-              <div>{getUnixToTime(app.duration).hours}</div>
+          {getAggregatedHostUsage(data).map(({host, totalDuration} : {host: string, totalDuration: number}) => (
+            <div className="app-row" key={host}>
+              <div> {host} </div>{" "}
+              <div>{getTotalHoursFromMillis(totalDuration)}</div>
             </div>
           ))}
         </div>
