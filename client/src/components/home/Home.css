@@ -98,6 +98,7 @@ option {
   border-radius: 3px;
   max-height: 20vh;
   overflow-y: scroll;
+  margin-bottom: 2rem;
 }
 
 .app-row {

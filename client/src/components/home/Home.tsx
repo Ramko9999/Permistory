@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Session } from "../../interfaces/Session";
 import "./Home.css";
+import StackedBarGraph from "../stacked_bar_graph";
+import ParentSize from '@visx/responsive/lib/components/ParentSize';
 
 const permissions = [
   { name: "Camera", type: "CAMERA" },
@@ -116,6 +118,11 @@ function Home() {
             <div className="stat">1000</div>
           </div>
         </div>
+
+        <div style={{marginTop : "2rem"}}> 
+        <ParentSize>{({ width, height }) => <StackedBarGraph width={width} height={400}/>}</ParentSize>
+        </div>
+        
         <div className="apps-list">
             <div className="app-row">
               <div>
