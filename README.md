@@ -1,4 +1,4 @@
-# permistory
+# Permistory
 
 ### How to build and install on browser?
 1. Navigate to the client directory.
