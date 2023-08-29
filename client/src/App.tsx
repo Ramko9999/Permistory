@@ -2,7 +2,6 @@ import "./App.css";
 import { useState } from "react";
 import ThemeContext, { Theme } from "./context/ThemeContext";
 import Navbar from "./components/navbar/Navbar";
-import AppRouter from "./routers/Router";
 import Home from "./components/home/Home";
 
 function App() {

@@ -8,7 +8,7 @@
     "default_icon": "logo192.png"
   },
   "chrome_url_overrides": {
-    "newtab": "newtab.html"
+    "index": "index.html"
   },
   "icons": {
     "192": "logo192.png"
@@ -22,7 +22,7 @@
   "devtools_page": "devtools.html",
   "web_accessible_resources": [
     {
-      "resources": ["logo192.png", "script.js", "newtab.html", "popup.js"],
+      "resources": ["logo192.png", "script.js", "index.html", "popup.js"],
       "matches": ["<all_urls>"]
     }
   ],

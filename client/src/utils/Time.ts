@@ -85,9 +85,9 @@ export const getMessageFromTime = (
   hours: number,
   minutes: number
 ) => {
-  if (days < 1 || days === NaN) {
-    if (hours < 1 || hours === NaN) {
-      if (minutes < 1 || minutes === NaN) {
+  if (days < 1) {
+    if (hours < 1) {
+      if (minutes < 1) {
         return `A few moments`;
       }
       return `${Math.floor(minutes)} mins`;
