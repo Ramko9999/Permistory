@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Session } from "../../interfaces/Session";
 import "./Home.css";
 import StackedBarGraph from "../stacked_bar_graph";
-import PieChart from "../pie_chart";
 import ParentSize from "@visx/responsive/lib/components/ParentSize";
 
 import mockData from "../../utils/mock";
@@ -152,16 +151,6 @@ function Home() {
             </div>
           </div>
         </div>
-
-        {permissionIdx == 2 ? (
-          <div className="location-container">
-            <h2 className="chart-title">Location Hits</h2>
-            <div className="location-chart-parent">
-              <PieChart locationData={location_data} />
-            </div>
-          </div>
-        ) : null}
-
         {permissionIdx != 2 ? (
           <div style={{ marginTop: "2rem" }}>
             <ParentSize>
