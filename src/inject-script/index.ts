@@ -1,3 +1,4 @@
+//@ts-nocheck
 console.log("Script is running....");
 
 let prevGetUserMedia = navigator.mediaDevices.getUserMedia;
@@ -130,3 +131,5 @@ const getHost = () => {
   const url = new URL(window.location.href);
   return url.host || url.hostname;
 }
+
+export {}

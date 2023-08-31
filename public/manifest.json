@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "author": "ramapitchala@gmail.com",
+  "name": "Permistory",
+  "version": "1.0",
+  "description": "View how websites use your permissions!",
+  "background": { "service_worker": "js/background.js" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "assets/logo192.png"
+  },
+  "icons": {
+    "192": "assets/logo192.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
+      "js": ["js/contentScript.js"]
+    }
+  ],
+  "devtools_page": "devtools.html",
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/logo192.png", "js/injectScript.js", "app.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "permissions": ["storage"]
+}

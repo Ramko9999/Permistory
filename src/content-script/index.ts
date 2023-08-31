@@ -1,5 +1,6 @@
+//@ts-nocheck
 var s = document.createElement('script');
-s.src = chrome.runtime.getURL('script.js');
+s.src = chrome.runtime.getURL('js/injectScript.js');
 s.onload = function () {
     this.remove();
 };
@@ -35,3 +36,5 @@ window.addEventListener("message", async (event) => {
         await chrome.storage.sync.set(domainLocationMap);
     }
 });
+
+export {}
