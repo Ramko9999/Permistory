@@ -1,135 +1,121 @@
-//@ts-nocheck
-console.log("Script is running....");
+import { generateId } from "../shared/util";
+import { MediaEvent, MediaEventType, Permission } from "../shared/interface";
 
-let prevGetUserMedia = navigator.mediaDevices.getUserMedia;
-navigator.mediaDevices.getUserMedia = function getUserMedia(constraints) {
-  const shouldTrackAudio = constraints && "audio" in constraints && constraints.audio;
-  const shouldTrackVideo = constraints && "video" in constraints && constraints.video;
+const PUSH_USAGE_PERIOD = 10_000; //10s
+const HOST = window.location.hostname;
 
-  return new Promise((resolve, reject) => {
-
-    prevGetUserMedia.bind(navigator.mediaDevices)(constraints)
-      .then((stream) => {
-        if (shouldTrackAudio) {
-          attachAudioUsage(stream);
+function monkeyPatchMedia() {
+  const prevGetUserMedia = navigator.mediaDevices.getUserMedia;
+  navigator.mediaDevices.getUserMedia = function patch(constraints) {
+    const didRequestAudio =
+      constraints && "audio" in constraints && constraints.audio;
+    const didRequestVideo =
+      constraints && "video" in constraints && constraints.video;
+    return new Promise(async (resolve, reject) => {
+      try {
+        const stream = await prevGetUserMedia.bind(navigator.mediaDevices)(
+          constraints
+        );
+        try {
+          if (didRequestAudio) {
+            trackAudioUsage(stream);
+          }
+          if (didRequestVideo) {
+            trackVideoUsage(stream);
+          }
+        } catch (error) {
+          console.error(`Error when attaching media usage tracking`, error);
+        } finally {
+          resolve(stream);
         }
-        if (shouldTrackVideo) {
-          attachVideoUsage(stream);
-        }
-        resolve(stream);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+}
+
+function trackVideoUsage(stream: MediaStream) {
+  const sessionStart = Date.now();
+  const metadata = {
+    session: generateId(),
+    sessionStart,
+    host: HOST,
+    permission: Permission.VIDEO,
+  };
+  const usageCron = setInterval(() => {
+    publishMediaEvent({
+      ...metadata,
+      type: MediaEventType.TILL,
+      timestamp: Date.now(),
+    });
+  }, PUSH_USAGE_PERIOD);
+
+  const trackIds = new Set(stream.getVideoTracks().map((track) => track.id));
+
+  // todo: consider onended events as well
+  for (const track of stream.getVideoTracks()) {
+    const prevTrackStop = track.stop;
+    track.stop = () => {
+      trackIds.delete(track.id);
+      if (trackIds.size === 0) {
+        clearInterval(usageCron);
+        console.log("Shutdown Video Usage Polling");
+      }
+      prevTrackStop.apply(track, []);
+    };
+  }
+
+  // todo: consider exposing track.label, which contains the device itself
+  publishMediaEvent({
+    ...metadata,
+    type: MediaEventType.START,
+    timestamp: sessionStart,
   });
 }
 
-let geolocation = navigator.geolocation.getCurrentPosition;
-  navigator.geolocation.getCurrentPosition = function (success, error, options) {
-  geolocation.apply(navigator.geolocation, [success, error, options]);
-  notifyLocationIntent();
-};
+function trackAudioUsage(stream: MediaStream) {
+  const sessionStart = Date.now();
+  const metadata = {
+    sessionStart,
+    session: generateId(),
+    host: HOST,
+    permission: Permission.AUDIO,
+  };
+  const usageCron = setInterval(() => {
+    publishMediaEvent({
+      ...metadata,
+      type: MediaEventType.TILL,
+      timestamp: Date.now(),
+    });
+  }, PUSH_USAGE_PERIOD);
 
-const attachAudioUsage = (stream) => {
-  const sessionId = generateSessionId(10);
-  const onStopAudioCallback = getOnStopCallback(stream.getAudioTracks().length, sessionId, "AUDIO");
+  const trackIds = new Set(stream.getAudioTracks().map((track) => track.id));
+
+  // todo: consider onended events as well
   for (const track of stream.getAudioTracks()) {
-    let prevTrackStop = track.stop;
-    track.stop = function onStop() {
+    const prevTrackStop = track.stop;
+    track.stop = () => {
+      trackIds.delete(track.id);
+      if (trackIds.size === 0) {
+        clearInterval(usageCron);
+        console.log("Shutdown Audio Usage Polling");
+      }
       prevTrackStop.apply(track, []);
-      onStopAudioCallback();
-    }
-  }
-  notifyUsageStart("AUDIO", sessionId);
-}
-
-const attachVideoUsage = (stream) => {
-  const sessionId = generateSessionId(10);
-  const onStopVideoCallback = getOnStopCallback(stream.getVideoTracks().length, sessionId, "VIDEO");
-  for (const track of stream.getVideoTracks()) {
-    let prevTrackStop = track.stop;
-    track.stop = function onStop() {
-      prevTrackStop.apply(track, []);
-      onStopVideoCallback();
-    }
-  }
-  notifyUsageStart("VIDEO", sessionId);
-}
-
-const getOnStopCallback = (tracksNeededToTrigger, session, device) => {
-  let tracksTriggered = 0;
-  return () => {
-    tracksTriggered++;
-    if (tracksTriggered === tracksNeededToTrigger) {
-      notifyUsageEnd(device, session);
-    }
-  }
-}
-
-const generateSessionId = (length) => {
-  const swap = (pool, i, j) => {
-    let temp = pool[i];
-    pool[i] = pool[j];
-    pool[j] = temp;
+    };
   }
 
-  let pool = [];
-  for (let i = 0; i < 10; i++) {
-    pool.push(i.toString());
-  }
-  for (let i = 0; i < 26; i++) {
-    pool.push(String.fromCodePoint(65 + i));
-  }
-
-  let sessionId = [];
-  for (let i = 0; i < length; i++) {
-    let pickIndex = Math.floor(Math.random() * pool.length);
-    swap(pool, pickIndex, pool.length - 1);
-    sessionId.push(pool.pop())
-  }
-
-  return sessionId.join("");
+  // todo: consider exposing track.label, which contains the device itself
+  publishMediaEvent({
+    ...metadata,
+    type: MediaEventType.START,
+    timestamp: sessionStart,
+  });
 }
 
-const getDatetime = () => {
-  return Date.now();
+function publishMediaEvent(event: MediaEvent) {
+  window.postMessage(event, "*");
 }
 
-const notifyUsageStart = (device, sessionId) => {
-  return window.postMessage({
-    message_type: "MEDIA_INTENT",
-    type: "BEGIN",
-    session: sessionId,
-    device: device,
-    timestamp: getDatetime(),
-    host: getHost()
-  }, "*");
-}
-
-const notifyUsageEnd = (device, sessionId) => {
-  return window.postMessage({
-    message_type: "MEDIA_INTENT",
-    type: "FINISH",
-    session: sessionId,
-    device: device,
-    timestamp: getDatetime(),
-    host: getHost()
-  }, "*");
-}
-
-
-const notifyLocationIntent = () => {
-  return window.postMessage({
-    message_type: "LOCATION_INTENT",
-    device: "LOCATION",
-    timestamp: getDatetime(),
-    host: getHost()
-  })
-}
-
-const getHost = () => {
-  const url = new URL(window.location.href);
-  return url.host || url.hostname;
-}
-
-export {}
+console.log("Script is running...");
+monkeyPatchMedia();
