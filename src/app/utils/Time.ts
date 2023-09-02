@@ -1,5 +1,5 @@
 import { Device } from "../components/home/Home";
-import { Session } from "../interfaces/Session";
+import { MediaSession } from "../../shared/interface";
 
 export const getUnixToTime = (unixTimestamp: number) => {
   let elapsed = Math.abs(new Date().getTime() - unixTimestamp) / 1000;
@@ -18,16 +18,14 @@ export const getUnixToTime = (unixTimestamp: number) => {
   return { days, hours, minutes };
 };
 
-export const getLastUsed = (data: Session[], deviceType: Device) => {
+export const getLastUsed = (data: MediaSession[], deviceType: Device) => {
   let lastUsedTime = null as any;
   for (const session of data) {
-    if (session.device === deviceType) {
       if (lastUsedTime === null) {
-        lastUsedTime = session.endingTimestamp;
+        lastUsedTime = session.end;
       } else {
-        lastUsedTime = Math.max(lastUsedTime, session.endingTimestamp);
+        lastUsedTime = Math.max(lastUsedTime, session.end);
       }
-    }
   }
   if (lastUsedTime === null) {
     return "Not enough data";
@@ -36,12 +34,10 @@ export const getLastUsed = (data: Session[], deviceType: Device) => {
   return `${getMessageFromTime(days, hours, minutes)} ago`;
 };
 
-export const getTotalTime = (data: Session[], deviceType: Device) => {
+export const getTotalTime = (data: MediaSession[], deviceType: Device) => {
   let millis = 0;
   for (const session of data) {
-    if (session.device === deviceType) {
-      millis += session.duration;
-    }
+      millis += (session.end - session.start);
   }
 
   const hours = getTotalHoursFromMillis(millis);

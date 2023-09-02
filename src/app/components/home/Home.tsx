@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Session } from "../../interfaces/Session";
 import "./Home.css";
 import StackedBarGraph from "../stacked_bar_graph";
 import ParentSize from "@visx/responsive/lib/components/ParentSize";
@@ -11,12 +10,19 @@ import {
   getTotalHoursFromMillis,
   getMessageFromMillis,
 } from "../../utils/Time";
-import UsageService from "../../services/Usage";
+import { MediaSession } from "../../../shared/interface";
+import { truncTime, removeDays } from "../../../shared/util";
+import { getAudioUsage } from "../../services/MediaUsage";
 
 export enum Device {
   CAMERA = "VIDEO",
   MICROPHONE = "AUDIO",
   LOCATION = "LOCATION",
+}
+
+type AggregatedMediaUsage = {
+  host: string,
+  usage: number
 }
 
 let location_data = [
@@ -42,17 +48,16 @@ function Home() {
   const [permissionIdx, setPermissionIdx] = useState<number>(0);
   const [rangeIdx, setRangeIdx] = useState<number>(0);
 
-  const [data, setData] = useState<Session[]>(mockData);
-
-  //const [data, setData] = useState<Session[]>([]);
+  const [data, setData] = useState<MediaSession[]>([]);
 
   useEffect(() => {
-    UsageService.getUsageData(permissions[permissionIdx].type).then(
-      (newData) => {
-        setData((prevData) => [...prevData, ...newData]);
-      }
-    );
-  }, [permissionIdx]);
+    // todo: fix this so that the user's date with their timezone is passed in instead of UTC dates
+    const from = new Date(removeDays(truncTime(Date.now()), ranges[rangeIdx].range))
+    getAudioUsage(from, new Date()).then((sessions) => {
+      console.log("Queried MediaSessions: ", sessions);
+      setData(sessions);
+    })
+  }, [permissionIdx, rangeIdx]);
 
   const onPermissionSwitchHandler = () => {
     if (permissionIdx === permissions.length - 1) {
@@ -74,26 +79,16 @@ function Home() {
     return <div> We haven't tracked your data yet </div>;
   }
 
-  const getAggregatedHostUsage = (data: Session[], deviceType: Device) => {
-    const aggregatedMap = new Map();
-    for (const session of data) {
-      if (session.device === deviceType) {
-        if (!aggregatedMap.has(session.host)) {
-          aggregatedMap.set(session.host, 0);
-        }
-        aggregatedMap.set(
-          session.host,
-          session.duration + aggregatedMap.get(session.host)
-        );
+  const getAggregatedHostUsage = (): AggregatedMediaUsage[] => {
+    let usageByHost: {[index: string]: number} = {}
+    for (const {host, start, end} of data) {
+      if(!(host in usageByHost)){
+        usageByHost[host] = 0;
       }
+      usageByHost[host] += (end - start);
     }
 
-    let aggregatedDataByHost: any = [];
-    aggregatedMap.forEach((totalDuration, host) => {
-      aggregatedDataByHost.push({ host, totalDuration });
-    });
-
-    return aggregatedDataByHost;
+    return Object.keys(usageByHost).map((host) => { return {host, usage: usageByHost[host]}});
   };
 
   const displayHours = (hours: number) => {
@@ -105,16 +100,6 @@ function Home() {
     }
 
     return hours.toString();
-  };
-
-  const filterData = () => {
-    const filteredData = [];
-    for (const session of data) {
-      if (session.device === permissions[permissionIdx].type) {
-        filteredData.push(session);
-      }
-    }
-    return filteredData;
   };
 
   return (
@@ -158,7 +143,7 @@ function Home() {
                 <StackedBarGraph
                   width={width}
                   height={400}
-                  data={filterData()}
+                  data={data}
                   range={ranges[rangeIdx].range}
                   permission={permissions[permissionIdx]}
                 />
@@ -175,16 +160,10 @@ function Home() {
               <div>Website</div>
               <div>Time</div>
             </div>
-            {getAggregatedHostUsage(data, permissions[permissionIdx].type)
+            {getAggregatedHostUsage()
               .sort((a: any, b: any) => b.totalDuration - a.totalDuration)
               .map(
-                ({
-                  host,
-                  totalDuration,
-                }: {
-                  host: string;
-                  totalDuration: number;
-                }) => (
+                ({host, usage}) => (
                   <div className="app-row" key={host}>
                     <div className="app-name">
                       <img
@@ -194,7 +173,7 @@ function Home() {
                       <div> {host} </div>{" "}
                     </div>
 
-                    <div>{getMessageFromMillis(totalDuration)}</div>
+                    <div>{getMessageFromMillis(usage)}</div>
                   </div>
                 )
               )}

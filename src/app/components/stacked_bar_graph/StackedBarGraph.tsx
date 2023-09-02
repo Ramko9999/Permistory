@@ -8,10 +8,10 @@ import { scaleBand, scaleLinear, scaleOrdinal } from "@visx/scale";
 import { timeParse, timeFormat } from "d3-time-format";
 import { useTooltip, useTooltipInPortal, defaultStyles } from "@visx/tooltip";
 import { localPoint } from "@visx/event";
-import { Session } from "../../interfaces/Session";
 import ColorHash from "../../services/ColorHash";
 import { getTotalHoursFromMillis } from "../../utils/Time";
 import { Device } from "../home/Home";
+import { MediaSession } from "../../../shared/interface";
 
 type TooltipData = {
   bar: SeriesPoint<any>;
@@ -27,7 +27,7 @@ type TooltipData = {
 export type BarStackProps = {
   width: number;
   height: number;
-  data: Session[];
+  data: MediaSession[];
   margin?: { top: number; right: number; bottom: number; left: number };
   events?: boolean;
   range: number;
@@ -55,7 +55,7 @@ const getDate = (usageDataForDay: any) => usageDataForDay.date;
 
 let tooltipTimeout: number;
 
-const getAggregatedDataByDay = (data: Session[], range: number) => {
+const getAggregatedDataByDay = (data: MediaSession[], range: number) => {
   const getDateAggregationFormat = (date: Date) => {
     const padDateComponent = (dateComp: number) => {
       if (dateComp < 10) {
@@ -70,7 +70,7 @@ const getAggregatedDataByDay = (data: Session[], range: number) => {
 
   const hosts = new Set<string>();
   data.forEach(({ host }) => hosts.add(host));
-  data = data.sort((a, b) => a.startingTimestamp - b.startingTimestamp);
+  data = data.sort((a, b) => a.start - b.start);
 
   const dateUsage: any = {};
 
@@ -87,10 +87,10 @@ const getAggregatedDataByDay = (data: Session[], range: number) => {
   let minDay = new Date();
   minDay.setDate(minDay.getDate() - range);
   let maxDay = new Date();
-  for (const { startingTimestamp, endingTimestamp, host, duration } of data) {
-    const startDate = new Date(startingTimestamp);
+  for (const { start, end, host } of data) {
+    const startDate = new Date(start);
 
-    const endDate = new Date(endingTimestamp);
+    const endDate = new Date(end);
 
     if (startDate.getDate() !== endDate.getDate()) {
       const formattedStart = getDateAggregationFormat(startDate);
@@ -116,7 +116,7 @@ const getAggregatedDataByDay = (data: Session[], range: number) => {
       const formattedDay = getDateAggregationFormat(startDate);
 
       populateHosts(formattedDay, hosts);
-      dateUsage[formattedDay][host] += duration;
+      dateUsage[formattedDay][host] += (end-start);
     }
   }
 
