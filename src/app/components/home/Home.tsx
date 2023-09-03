@@ -1,43 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./Home.css";
-import StackedBarGraph from "../stacked_bar_graph";
-import ParentSize from "@visx/responsive/lib/components/ParentSize";
-
-import mockData from "../../utils/mock";
+import { MediaUsageChart } from "../media/usage-chart";
 import {
   getLastUsed,
   getTotalTime,
-  getTotalHoursFromMillis,
   getMessageFromMillis,
-} from "../../utils/Time";
-import { MediaSession } from "../../../shared/interface";
-import { truncTime, removeDays } from "../../../shared/util";
-import { getAudioUsage } from "../../services/MediaUsage";
-
-export enum Device {
-  CAMERA = "VIDEO",
-  MICROPHONE = "AUDIO",
-  LOCATION = "LOCATION",
-}
+  truncTimeWithTz,
+} from "../../util";
+import { Permission } from "../../../shared/interface";
+import { useMediaSessions } from "../../hooks/use-media-session";
 
 type AggregatedMediaUsage = {
-  host: string,
-  usage: number
+  host: string;
+  usage: number;
+};
+
+function createDateRangeFromNow(daysInThePast: number) {
+  const from = new Date();
+  from.setDate(from.getDate() - daysInThePast);
+  const to = new Date();
+  // have to do this, or run into a weird infinite render problem where `to` keeps changing
+  to.setSeconds(0, 0);
+  return { from: truncTimeWithTz(from), to: to};
 }
-
-let location_data = [
-  { host: "google.com", count: 10 },
-  { host: "amazon.com", count: 30 },
-  { host: "facebook.com", count: 10 },
-  { host: "twitch.com", count: 5 },
-  { host: "ebay.com", count: 15 },
-];
-
-const permissions = [
-  { name: "Camera", type: Device.CAMERA },
-  { name: "Microphone", type: Device.MICROPHONE },
-  { name: "Location", type: Device.LOCATION },
-];
 
 const ranges = [
   { name: "Last Week", range: 7 },
@@ -45,27 +30,14 @@ const ranges = [
 ];
 
 function Home() {
-  const [permissionIdx, setPermissionIdx] = useState<number>(0);
   const [rangeIdx, setRangeIdx] = useState<number>(0);
+  const { from, to } = createDateRangeFromNow(ranges[rangeIdx].range);
 
-  const [data, setData] = useState<MediaSession[]>([]);
-
-  useEffect(() => {
-    // todo: fix this so that the user's date with their timezone is passed in instead of UTC dates
-    const from = new Date(removeDays(truncTime(Date.now()), ranges[rangeIdx].range))
-    getAudioUsage(from, new Date()).then((sessions) => {
-      console.log("Queried MediaSessions: ", sessions);
-      setData(sessions);
-    })
-  }, [permissionIdx, rangeIdx]);
-
-  const onPermissionSwitchHandler = () => {
-    if (permissionIdx === permissions.length - 1) {
-      setPermissionIdx(0);
-    } else {
-      setPermissionIdx(permissionIdx + 1);
-    }
-  };
+  const { status, mediaSessions } = useMediaSessions({
+    from: from.valueOf(),
+    to: to.valueOf(),
+    mediaPermission: Permission.AUDIO,
+  });
 
   const onRangeSwitchHandler = () => {
     if (rangeIdx === ranges.length - 1) {
@@ -75,42 +47,31 @@ function Home() {
     }
   };
 
-  if (data.length === 0) {
-    return <div> We haven't tracked your data yet </div>;
+  if (mediaSessions.length === 0) {
+    return <div> No data is available for this time period </div>;
   }
 
   const getAggregatedHostUsage = (): AggregatedMediaUsage[] => {
-    let usageByHost: {[index: string]: number} = {}
-    for (const {host, start, end} of data) {
-      if(!(host in usageByHost)){
+    let usageByHost: { [index: string]: number } = {};
+    for (const { host, start, end } of mediaSessions) {
+      if (!(host in usageByHost)) {
         usageByHost[host] = 0;
       }
-      usageByHost[host] += (end - start);
+      usageByHost[host] += end - start;
     }
 
-    return Object.keys(usageByHost).map((host) => { return {host, usage: usageByHost[host]}});
+    return Object.keys(usageByHost).map((host) => {
+      return { host, usage: usageByHost[host] };
+    });
   };
-
-  const displayHours = (hours: number) => {
-    if (hours < 0) {
-      return hours.toFixed(2).toString();
-    }
-    if (hours < 10) {
-      return hours.toFixed(1).toString();
-    }
-
-    return hours.toString();
-  };
-
+  
   return (
     <>
       <div className="container">
         <div className="menu-container">
           <h2>Analytics</h2>
           <div className="select-containers">
-            <button onClick={onPermissionSwitchHandler}>
-              {permissions[permissionIdx].name}
-            </button>
+            <button>Microphone</button>
             <button onClick={onRangeSwitchHandler}>
               {ranges[rangeIdx].name}
             </button>
@@ -119,66 +80,43 @@ function Home() {
         <div className="stats">
           <div className="stat-container">
             <div className="stat-label">Last Used</div>
-            <div className="stat">
-              {permissionIdx == 2
-                ? "4 hrs ago"
-                : getLastUsed(data, permissions[permissionIdx].type)}
-            </div>
+            <div className="stat">{getLastUsed(mediaSessions)}</div>
           </div>
           <div className="stat-container">
-            <div className="stat-label">
-              {permissionIdx == 2 ? "Total Location Intents" : "Total Hours Used"}
-            </div>
-            <div className="stat">
-              {permissionIdx == 2
-                ? "70"
-                : getTotalTime(data, permissions[permissionIdx].type)}
-            </div>
+            <div className="stat-label">Total Hours Used</div>
+            <div className="stat">{getTotalTime(mediaSessions)}</div>
           </div>
         </div>
-        {permissionIdx != 2 ? (
-          <div style={{ marginTop: "2rem" }}>
-            <ParentSize>
-              {({ width, height }) => (
-                <StackedBarGraph
-                  width={width}
-                  height={400}
-                  data={data}
-                  range={ranges[rangeIdx].range}
-                  permission={permissions[permissionIdx]}
-                />
-              )}
-            </ParentSize>
+        <div style={{ marginTop: "2rem" }}>
+          <MediaUsageChart
+            from={from.valueOf()}
+            to={to.valueOf()}
+            mediaSessions={mediaSessions}
+            title="Total Usage"
+          />
+        </div>
+        <div className="apps-list">
+          <h2 className="chart-title">{`Total Microphone Usage`}</h2>
+          <div className="app-row">
+            <div>Website</div>
+            <div>Time</div>
           </div>
-        ) : null}
-        {permissionIdx !== 2 && (
-          <div className="apps-list">
-          <h2 className="chart-title">
-            {`Total ${permissions[permissionIdx].name} Usage`}
-            </h2>            
-            <div className="app-row">
-              <div>Website</div>
-              <div>Time</div>
-            </div>
-            {getAggregatedHostUsage()
-              .sort((a: any, b: any) => b.totalDuration - a.totalDuration)
-              .map(
-                ({host, usage}) => (
-                  <div className="app-row" key={host}>
-                    <div className="app-name">
-                      <img
-                        src={`https://${host}/favicon.ico`}
-                        className="favicon"
-                      />
-                      <div> {host} </div>{" "}
-                    </div>
+          {getAggregatedHostUsage()
+            .sort((a: any, b: any) => b.totalDuration - a.totalDuration)
+            .map(({ host, usage }) => (
+              <div className="app-row" key={host}>
+                <div className="app-name">
+                  <img
+                    src={`https://${host}/favicon.ico`}
+                    className="favicon"
+                  />
+                  <div> {host} </div>{" "}
+                </div>
 
-                    <div>{getMessageFromMillis(usage)}</div>
-                  </div>
-                )
-              )}
-          </div>
-        )}
+                <div>{getMessageFromMillis(usage)}</div>
+              </div>
+            ))}
+        </div>
       </div>
     </>
   );

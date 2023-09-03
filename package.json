@@ -3,14 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@visx/tooltip": "^3.3.0",
-    "@visx/visx": "^2.7.0",
-    "d3-time-format": "^4.1.0",
     "react": "^17.0.2",
-    "react-chartjs-2": "^4.0.1",
     "react-dom": "^17.0.2",
     "react-feather": "^2.0.9",
     "react-scripts": "^5.0.1",
+    "recharts": "^2.8.0",
     "typescript": "^4.1.2",
     "web-vitals": "^1.0.1"
   },
@@ -43,7 +40,6 @@
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "@types/chrome": "^0.0.176",
-    "@types/d3-time-format": "^4.0.0",
     "@types/jest": "^26.0.15",
     "@types/node": "^12.0.0",
     "@types/react": "^17.0.0",
