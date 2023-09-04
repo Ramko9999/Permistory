@@ -1,11 +1,13 @@
 import { MediaSession } from "../../../shared/interface";
 import {
   truncTimeWithTz,
-  getMonthDisplay,
   areDatesEqual,
   getHashedColor,
+  formatDateForDashboard,
+  generateDateRange,
 } from "../../util";
 import {
+  ResponsiveContainer,
   BarChart,
   CartesianGrid,
   XAxis,
@@ -19,15 +21,6 @@ interface MediaUsageChartProps {
   from: number;
   to: number;
   mediaSessions: MediaSession[];
-  title: string;
-}
-
-function formatDateForChart(date: Date) {
-  const current = new Date();
-  if (current.getFullYear() === date.getFullYear()) {
-    return `${getMonthDisplay(date)} ${date.getDate()}`;
-  }
-  return `${getMonthDisplay(date)} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
 function getAllHosts(mediaSessions: MediaSession[]) {
@@ -37,11 +30,8 @@ function getAllHosts(mediaSessions: MediaSession[]) {
 function getChartData(from: Date, to: Date, mediaSessions: MediaSession[]) {
   let data = [];
   const allHosts = getAllHosts(mediaSessions);
-  for (
-    let currentDate = truncTimeWithTz(from);
-    currentDate <= truncTimeWithTz(to);
-    currentDate.setDate(currentDate.getDate() + 1)
-  ) {
+  const days = generateDateRange(truncTimeWithTz(from), truncTimeWithTz(to));
+  for (const currentDate of days) {
     let point: any = {};
     // capture the mediaSessions which start on current day
     const sessions = mediaSessions.filter(({ start }) =>
@@ -54,7 +44,7 @@ function getChartData(from: Date, to: Date, mediaSessions: MediaSession[]) {
         return { host, duration: Math.floor((end - start) / (1000 * 60)) }; // mins
       })
       .forEach(({ host, duration }) => (point[host] += duration));
-    data.push({ ...point, day: formatDateForChart(currentDate) });
+    data.push({ ...point, day: formatDateForDashboard(currentDate) });
   }
   return data;
 }
@@ -63,29 +53,30 @@ export function MediaUsageChart({
   from,
   to,
   mediaSessions,
-  title,
 }: MediaUsageChartProps) {
   const chartData = getChartData(new Date(from), new Date(to), mediaSessions);
   return (
-    <BarChart
-      width={800}
-      height={600}
-      data={chartData}
-      margin={{
-        top: 20,
-        right: 30,
-        left: 20,
-        bottom: 5,
-      }}
-    >
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="day" />
-      <YAxis />
-      <Tooltip />
-      <Legend />
-      {getAllHosts(mediaSessions).map((host) => (
-        <Bar dataKey={host} stackId="stack" fill={getHashedColor(host)} />
-      ))}
-    </BarChart>
+    <ResponsiveContainer height={300} width="100%">
+      <BarChart
+        data={chartData}
+        margin={{
+          top: 20,
+          right: 30,
+          left: 20,
+          bottom: 5,
+        }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="day" />
+        <YAxis
+          label={{ value: "Usage (mins)", angle: -90, position: "insideLeft" }}
+        />
+        <Tooltip />
+        <Legend />
+        {getAllHosts(mediaSessions).map((host) => (
+          <Bar dataKey={host} stackId="stack" fill={getHashedColor(host)} />
+        ))}
+      </BarChart>
+    </ResponsiveContainer>
   );
 }

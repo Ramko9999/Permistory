@@ -1,45 +1,5 @@
 import { MediaSession } from "../../shared/interface";
 
-export function getUnixToTime(unixTimestamp: number) {
-  let elapsed = Math.abs(new Date().getTime() - unixTimestamp) / 1000;
-
-  const days = Math.floor(elapsed / 86400);
-  elapsed -= days * 86400;
-
-  // calculate hours
-  const hours = Math.floor(elapsed / 3600) % 24;
-  elapsed -= hours * 3600;
-
-  // calculate minutes
-  const minutes = Math.floor(elapsed / 60) % 60;
-  elapsed -= minutes * 60;
-
-  return { days, hours, minutes };
-}
-
-export function getLastUsed(sessions: MediaSession[]) {
-  const latestTimestamp = sessions
-    .map(({ end }) => end)
-    .reduce((latestTimestamp, currentTimestamp) =>
-      Math.max(latestTimestamp, currentTimestamp)
-    );
-
-  const { days, hours, minutes } = getUnixToTime(latestTimestamp);
-  return `${getMessageFromTime(days, hours, minutes)} ago`;
-}
-
-export function getTotalTime(data: MediaSession[]) {
-  let millis = 0;
-  for (const session of data) {
-    millis += session.end - session.start;
-  }
-
-  const minutes = millis / (1000 * 60);
-  const hours = minutes / 60;
-  const days = hours / 24;
-  return getMessageFromTime(days, hours, minutes);
-}
-
 export const getMessageFromMillis = (millis: number) => {
   const minutes = millis / (1000 * 60);
   const hours = minutes / 60;
@@ -113,4 +73,42 @@ export function getMonthDisplay(date: Date) {
 
 export function areDatesEqual(d1: Date, d2: Date){
     return d1.toDateString() === d2.toDateString();
+}
+
+export function generateDateRange(start: Date, end: Date){
+  let range = [];
+  for(const current = new Date(start); current.valueOf() <= end.valueOf(); current.setDate(current.getDate() + 1)){
+    range.push(new Date(current));
+  }
+  return range;
+}
+
+export function formatDateForDashboard(date: Date) {
+  const current = new Date();
+  if (current.getFullYear() === date.getFullYear()) {
+    return `${getMonthDisplay(date)} ${date.getDate()}`;
+  }
+  return `${getMonthDisplay(date)} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
+export function getTimePeriodDisplay(periodInMillis: number){
+  const secs = Math.floor(periodInMillis / 1000) % 60;
+  const mins =  Math.floor(periodInMillis / (60 * 1000)) % 60;
+  const hours = Math.floor(periodInMillis / (60 * 60 * 1000));
+
+  let builder = [];
+  if(hours > 0){
+    builder.push(`${hours}h`);
+  }
+  if(mins > 0){
+    builder.push(`${mins}m`);
+  }
+  if(secs > 0){
+    builder.push(`${secs}s`);
+  }
+  return builder.join(" ");
+}
+
+export function getFaviconUrl(host: string, size: number = 32){
+  return `https://www.google.com/s2/favicons?domain=${host}&size=${size}`
 }

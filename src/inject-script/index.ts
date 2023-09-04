@@ -60,6 +60,11 @@ function trackVideoUsage(stream: MediaStream) {
       trackIds.delete(track.id);
       if (trackIds.size === 0) {
         clearInterval(usageCron);
+        publishMediaEvent({
+          ...metadata,
+          type: MediaEventType.TILL,
+          timestamp: Date.now(),
+        });
         console.log("Shutdown Video Usage Polling");
       }
       prevTrackStop.apply(track, []);
@@ -99,6 +104,11 @@ function trackAudioUsage(stream: MediaStream) {
       trackIds.delete(track.id);
       if (trackIds.size === 0) {
         clearInterval(usageCron);
+        publishMediaEvent({
+          ...metadata,
+          type: MediaEventType.TILL,
+          timestamp: Date.now(),
+        });
         console.log("Shutdown Audio Usage Polling");
       }
       prevTrackStop.apply(track, []);
