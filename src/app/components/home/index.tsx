@@ -1,47 +1,41 @@
 import React, { useState } from "react";
-import "./home.css";
-import { MediaUsageChart } from "../media/usage-chart";
 import { truncTimeWithTz } from "../../util";
 import { Permission } from "../../../shared/interface";
-import { useMediaSessions } from "../../hooks/use-media-session";
-import { MediaUsageTable } from "../media/usage-table";
+import { AudioDashboard, VideoDashboard } from "../media";
+import { usePeriod } from "../../hooks/use-period";
+import "./home.css";
+import { PermissionSelect } from "../filter/permission-select";
+import { DatePeriodSelect } from "../filter/date-period-select";
 
-
-function createDateRangeFromNow(daysInThePast: number) {
-  const from = new Date();
-  from.setDate(from.getDate() - daysInThePast);
-  const to = new Date();
-  // have to do this, or run into a weird infinite render problem where `to` keeps changing
-  to.setSeconds(0, 0);
-  return { from: truncTimeWithTz(from), to: to };
+interface DashboardProps {
+  from: number;
+  to: number;
+  permission: Permission;
 }
 
-const ranges = [
-  { name: "Last Week", range: 7 },
-  { name: "Last Month", range: 30 },
-];
+function Dashboard({ from, to, permission }: DashboardProps) {
+  switch (permission) {
+    case Permission.AUDIO:
+      return <AudioDashboard from={from} to={to} />;
+    default:
+      return <VideoDashboard from={from} to={to} />;
+  }
+}
+
+function createDateRangeFromNow(daysInThePast: number) {
+  const fromDate = new Date();
+  fromDate.setDate(fromDate.getDate() - daysInThePast);
+  const toDate = new Date();
+  // have to do this, or run into a weird infinite render problem where `to` keeps changing
+  toDate.setSeconds(0, 0);
+  return { from: truncTimeWithTz(fromDate).valueOf(), to: toDate.valueOf() };
+}
 
 function Home() {
-  const [rangeIdx, setRangeIdx] = useState<number>(0);
-  const { from, to } = createDateRangeFromNow(ranges[rangeIdx].range);
-
-  const { status, mediaSessions } = useMediaSessions({
-    from: from.valueOf(),
-    to: to.valueOf(),
-    mediaPermission: Permission.AUDIO,
-  });
-
-  const onRangeSwitchHandler = () => {
-    if (rangeIdx === ranges.length - 1) {
-      setRangeIdx(0);
-    } else {
-      setRangeIdx(rangeIdx + 1);
-    }
-  };
-
-  if (mediaSessions.length === 0) {
-    return <div> No data is available for this time period </div>;
-  }
+  const {from: initialFrom, to: initialTo} = createDateRangeFromNow(7);
+  const { period, setFrom, setTo } = usePeriod({initialTo, initialFrom});
+  const [permission, setPermission] = useState<Permission>(Permission.AUDIO);
+  const { from, to } = period;
 
   return (
     <>
@@ -49,25 +43,11 @@ function Home() {
         <div className="menu-container">
           <h2>Analytics</h2>
           <div className="select-containers">
-            <button>Microphone</button>
-            <button onClick={onRangeSwitchHandler}>
-              {ranges[rangeIdx].name}
-            </button>
+            <PermissionSelect permission={permission} onSelectPermission={setPermission}/>
+            <DatePeriodSelect from={from} to={to} onSelectFrom={setFrom} onSelectTo={setTo}/>
           </div>
         </div>
-        <div className="stat-container chart-container">
-          <div className="stat-label">Daily Microphone Usage</div>
-          <MediaUsageChart
-            from={from.valueOf()}
-            to={to.valueOf()}
-            mediaSessions={mediaSessions}
-          />
-          <MediaUsageTable
-            from={from.valueOf()}
-            to={to.valueOf()}
-            mediaSessions={mediaSessions}
-          />
-        </div>
+        <Dashboard from={from} to={to} permission={permission} />
       </div>
     </>
   );

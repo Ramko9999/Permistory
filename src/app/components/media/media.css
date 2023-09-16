@@ -1,5 +1,29 @@
-td,
-th {
+.media-chart-overlay {
+  background-color: transparent;
+  display: flex;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(0.2rem);
+  z-index: 1;
+}
+
+.media-chart {
+  position: relative;
+  width: 100%;
+}
+
+.media-table {
+  border-collapse: collapse;
+  width: 100%;
+  height: 100%;
+}
+
+.media-table td,
+.media-table th {
   font-size: 16px;
   border: 1px solid #dddddd;
   text-align: left;
@@ -7,24 +31,18 @@ th {
   background-color: white;
 }
 
-table {
-  border-collapse: collapse;
-  width: 100%;
-  height: 100%;
-}
-
-.table-container {
-  height: 300px;
+.media-table-container {
+  max-height: 300px;
   width: 100%;
   overflow-y: scroll;
 }
 
-.host-icon {
+.media-table-host-container {
   display: flex;
   flex-direction: row;
   gap: 0.4rem;
 }
 
-.icon {
-    padding: 3px;
+.media-table-host-icon {
+  padding: 3px;
 }

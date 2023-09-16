@@ -30,8 +30,8 @@ function MediaUsageTableBlock({
       {mediaSessions.map(({ host, start, end }) => (
         <tr>
           <td>
-            <div className="host-icon">
-              <img className="icon" src={getFaviconUrl(host)}/>
+            <div className="media-table-host-container">
+              <img className="media-table-host-icon" src={getFaviconUrl(host)}/>
               {host}
             </div>
           </td>
@@ -60,8 +60,8 @@ export function MediaUsageTable({
     truncTimeWithTz(new Date(to))
   );
   return (
-    <div className="table-container">
-      <table>
+    <div className="media-table-container">
+      <table className="media-table">
         {days.map((day) => {
           const relevantSessions = mediaSessions
             .filter(({ start }) =>
