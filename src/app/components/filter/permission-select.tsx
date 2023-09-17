@@ -7,11 +7,11 @@ interface PermissionSelectProps {
 }
 
 function getPermissionDisplay(permission: Permission) {
-    if (permission === Permission.AUDIO) {
-      return "Microphone";
-    }
-    return "Camera";
+  if (permission === Permission.AUDIO) {
+    return "Microphone";
   }
+  return "Camera";
+}
 
 export function PermissionSelect({
   permission,
@@ -19,7 +19,7 @@ export function PermissionSelect({
 }: PermissionSelectProps) {
   return (
     <select
-      className="filter"
+      className="permission-select filter"
       onChange={(ev) => onSelectPermission(ev.target.value as Permission)}
     >
       <option

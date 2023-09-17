@@ -1,15 +1,49 @@
 .filter {
   border: none;
   outline: none;
-  padding: 0.5rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  height: max-content;
-  width: max-content;
   background-color: var(--section-bg);
-  font-family: var(--font);
-  color: var(--primary);
   border-radius: 3px;
   box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0, 0, 0, 0.1),
     0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+select:hover {
+  cursor: pointer;
+}
+
+input[type="date"] {
+  width: 1px;
+  height: 1px;
+  visibility: hidden;
+  position: absolute;
+}
+
+.date-input-display {
+  padding: 0.2em;
+  text-decoration: underline;
+}
+
+.date-input-display:hover {
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.date-period-picker {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.date-period-select {
+  background-color: inherit;
+  border: inherit;
+  font: inherit;
+  outline: inherit;
+  color: inherit;
+  border-right: 1px solid;
 }

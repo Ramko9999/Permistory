@@ -1,27 +1,32 @@
-import { useState } from "react"
+import { useState } from "react";
 
 interface Period {
-    from: number,
-    to: number,
+  from: number;
+  to: number;
 }
 
 interface UseSelectPeriodProps {
-    initialFrom: number,
-    initialTo: number
+  initialFrom: number;
+  initialTo: number;
 }
 
-export function usePeriod({initialFrom, initialTo}: UseSelectPeriodProps){
-    const [period, setPeriod] = useState<Period>({from:initialFrom, to:initialTo});
+export function usePeriod({ initialFrom, initialTo }: UseSelectPeriodProps) {
+  const [period, setPeriod] = useState<Period>({
+    from: initialFrom,
+    to: initialTo,
+  });
 
-    const setFrom = (newFrom: number) => {
-        const {to} = period;
-        setPeriod({from: newFrom, to: Math.max(to, newFrom)});
-    }
+  const setFrom = (from: number) => {
+    setPeriod(({ to }) => {
+      return { from, to: Math.max(to, from) };
+    });
+  };
 
-    const setTo = (newTo: number) => {
-        const {from} = period;
-        setPeriod({from: Math.min(newTo, from), to: newTo});
-    }
+  const setTo = (to: number) => {
+    setPeriod(({ from }) => {
+      return { from: Math.min(to, from), to };
+    });
+  };
 
-    return {period, setFrom, setTo}
+  return { period, setFrom, setTo };
 }
