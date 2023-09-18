@@ -9,15 +9,12 @@ import {
 } from "../../util";
 import "./media.css";
 
-interface MediaUsageTableBlockProps {
+interface MediaTableBlockProps {
   day: number;
   mediaSessions: MediaSession[];
 }
 
-function MediaUsageTableBlock({
-  day,
-  mediaSessions,
-}: MediaUsageTableBlockProps) {
+function MediaTableBlock({ day, mediaSessions }: MediaTableBlockProps) {
   const totalUsage = mediaSessions
     .map(({ end, start }) => end - start)
     .reduce((total, current) => total + current);
@@ -31,7 +28,10 @@ function MediaUsageTableBlock({
         <tr>
           <td>
             <div className="media-table-host-container">
-              <img className="media-table-host-icon" src={getFaviconUrl(host)}/>
+              <img
+                className="media-table-host-icon"
+                src={getFaviconUrl(host)}
+              />
               {host}
             </div>
           </td>
@@ -44,17 +44,13 @@ function MediaUsageTableBlock({
   );
 }
 
-export interface MediaUsageTableProps {
+export interface MediaTableProps {
   from: number;
   to: number;
   mediaSessions: MediaSession[];
 }
 
-export function MediaUsageTable({
-  from,
-  to,
-  mediaSessions,
-}: MediaUsageTableProps) {
+export function MediaTable({ from, to, mediaSessions }: MediaTableProps) {
   const days = generateDateRange(
     truncTimeWithTz(new Date(from)),
     truncTimeWithTz(new Date(to))
@@ -70,7 +66,7 @@ export function MediaUsageTable({
             .filter(({ start, end }) => end - start > 0);
 
           return relevantSessions.length > 0 ? (
-            <MediaUsageTableBlock
+            <MediaTableBlock
               day={day.valueOf()}
               mediaSessions={relevantSessions}
             />

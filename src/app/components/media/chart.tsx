@@ -47,28 +47,47 @@ function getChartData(from: Date, to: Date, mediaSessions: MediaSession[]) {
   return data;
 }
 
-function formatTooltipContent(value: string) {
-  return getTimePeriodDisplay(parseInt(value));
-}
-
 function formatTicks(value: any, index: number) {
   // mins
   return Math.floor(parseInt(value) / (1000 * 60)).toString();
 }
 
+interface MediaChartTooltipProps {
+  active: boolean;
+  label: string;
+  payload: { payload: { [index: string]: string | number } }[];
+}
 
-interface MediaUsageChartProps {
+function MediaChartTooltip({ active, payload, label }: MediaChartTooltipProps) {
+  if (!active) {
+    return null;
+  }
+
+  const point = payload[0].payload;
+  const hosts = Object.keys(point).filter((key) => key !== "day");
+
+  return (
+    <div className="media-chart-tooltip">
+      <span className="media-chart-tooltip-label">{label}</span>
+      {hosts.length > 0
+        ? hosts.map((host) => (
+            <div className="media-chart-tooltip-value">
+              <strong style={{ color: getHashedColor(host) }}>{host}</strong>
+              <span>{getTimePeriodDisplay(point[host] as number)}</span>
+            </div>
+          ))
+        : "No data"}
+    </div>
+  );
+}
+
+interface MediaChartProps {
   from: number;
   to: number;
   mediaSessions: MediaSession[];
 }
 
-
-export function MediaUsageChart({
-  from,
-  to,
-  mediaSessions,
-}: MediaUsageChartProps) {
+export function MediaChart({ from, to, mediaSessions }: MediaChartProps) {
   const chartData = getChartData(new Date(from), new Date(to), mediaSessions);
   return (
     <div className="media-chart">
@@ -97,7 +116,13 @@ export function MediaUsageChart({
             }}
             tickFormatter={formatTicks}
           />
-          <Tooltip formatter={formatTooltipContent} />
+          <Tooltip
+            filterNull={false}
+            content={
+              //@ts-ignore: The props get passed in somehow...
+              <MediaChartTooltip />
+            }
+          />
           <Legend />
           {getAllHosts(mediaSessions).map((host) => (
             <Bar dataKey={host} stackId="stack" fill={getHashedColor(host)} />
