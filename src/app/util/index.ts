@@ -14,6 +14,12 @@ export function truncTimeWithTz(datetime: Date) {
   return updatedDatetime;
 }
 
+export const Period = {
+  SECOND: 1000,
+  MINUTE: 60 * 1000,
+  HOUR: 60 * 60 * 1000,
+};
+
 const MONTHS = [
   "Jan.",
   "Feb.",
@@ -57,10 +63,10 @@ export function formatDateForDashboard(date: Date) {
   return `${getMonthDisplay(date)} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
-export function getTimePeriodDisplay(periodInMillis: number) {
-  const secs = Math.floor(periodInMillis / 1000) % 60;
-  const mins = Math.floor(periodInMillis / (60 * 1000)) % 60;
-  const hours = Math.floor(periodInMillis / (60 * 60 * 1000));
+export function getTimePeriodDisplay(period: number) {
+  const secs = Math.floor(period / Period.SECOND) % 60;
+  const mins = Math.floor(period / Period.MINUTE) % 60;
+  const hours = Math.floor(period / Period.HOUR);
 
   let builder = [];
   if (hours > 0) {

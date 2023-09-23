@@ -6,6 +6,7 @@ import {
   formatDateForDashboard,
   generateDateRange,
   getTimePeriodDisplay,
+  Period,
 } from "../../util";
 import {
   ResponsiveContainer,
@@ -47,9 +48,21 @@ function getChartData(from: Date, to: Date, mediaSessions: MediaSession[]) {
   return data;
 }
 
-function formatTicks(value: any, index: number) {
-  // mins
-  return Math.floor(parseInt(value) / (1000 * 60)).toString();
+function getTicks(maxPeriod: number) {
+  let tickDelta = Period.SECOND * 15;
+  if (maxPeriod > 4 * Period.HOUR) {
+    tickDelta = Math.ceil(maxPeriod / (4 * Period.HOUR)) * Period.HOUR;
+  } else if (maxPeriod > Period.HOUR) {
+    tickDelta = Period.HOUR;
+  } else if (maxPeriod > Period.MINUTE) {
+    tickDelta = Period.MINUTE * 15;
+  }
+
+  let ticks = [];
+  for (let tickPoint = 0; ticks.length < 5; tickPoint++) {
+    ticks.push(tickPoint * tickDelta);
+  }
+  return ticks;
 }
 
 interface MediaChartTooltipProps {
@@ -89,6 +102,18 @@ interface MediaChartProps {
 
 export function MediaChart({ from, to, mediaSessions }: MediaChartProps) {
   const chartData = getChartData(new Date(from), new Date(to), mediaSessions);
+  const totalPeriodByPoint = Math.max(
+    ...chartData.map((dataPoint) => {
+      let totalPeriod = 0;
+      for (const host in dataPoint) {
+        if (host !== "day") {
+          totalPeriod += dataPoint[host];
+        }
+      }
+      return totalPeriod;
+    })
+  );
+
   return (
     <div className="media-chart">
       {mediaSessions.length === 0 ? (
@@ -109,12 +134,8 @@ export function MediaChart({ from, to, mediaSessions }: MediaChartProps) {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="day" />
           <YAxis
-            label={{
-              value: "Usage (mins)",
-              angle: -90,
-              position: "insideLeft",
-            }}
-            tickFormatter={formatTicks}
+            ticks={getTicks(totalPeriodByPoint)}
+            tickFormatter={(value, _) => getTimePeriodDisplay(parseInt(value))}
           />
           <Tooltip
             filterNull={false}
