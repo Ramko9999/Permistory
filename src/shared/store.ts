@@ -1,5 +1,6 @@
+import { generateDateRange } from "../app/util";
 import { MediaEvent, MediaEventType, MediaSession } from "./interface";
-import { truncTime, addDays, removeDays } from "./util";
+import { truncTime, truncTimeWithTz, removeDays } from "./util";
 
 type MediaSessionsByKey = { [index: string]: MediaSession[] };
 
@@ -69,48 +70,52 @@ async function updateMediaSesssion(event: MediaEvent) {
   await put(key, updatedSessions);
 }
 
+function sliceMediaSession(
+  { start, end, ...metadata }: MediaSession,
+  from: number,
+  to: number
+) {
+  let begin = Math.max(start, from);
+  const finish = Math.min(to, end);
+  const slicePoints = generateDateRange(
+    new Date(truncTimeWithTz(begin)),
+    new Date(truncTimeWithTz(finish))
+  ).map((d) => d.valueOf());
+
+  const slices: MediaSession[] = [];
+  for (const slicePoint of slicePoints) {
+    if (slicePoint > begin && slicePoint < finish) {
+      slices.push({ ...metadata, start: begin, end: slicePoint });
+      begin = slicePoint;
+    }
+  }
+  slices.push({ ...metadata, start: begin, end: finish });
+  return slices;
+}
+
 /**
  * Returns media sessions which occured between `from` and `to`
  * @param from unix milliseconds
  * @param to unix milliseconds
  */
-export async function queryMediaSessions(from: number, to: number) {
-  // TODO: write tests. One of the core methods
-  // some sessions can overlap from the previous day to the next. Consider a
-  // session from 11:30 PM to 2:20 AM. Hence, we need to fetch data from 1 day before the requested `from`
-  // and capture the part of the session that existed after `from`
-  const lowerBound = removeDays(truncTime(from), 1);
-  const upperBound = truncTime(to);
-  // generate keys spanning from lowerBound to upperBound
-  let keys = [];
-  for (
-    let currentDay = lowerBound;
-    currentDay <= upperBound;
-    currentDay = addDays(currentDay, 1)
-  ) {
-    keys.push(currentDay.toString());
-  }
-  const sessionsByKey = await get(keys);
-  let canonicalSessions: MediaSession[] = [];
-  for (const key in sessionsByKey) {
-    canonicalSessions = [...canonicalSessions, ...sessionsByKey[key]];
-  }
+export async function queryMediaSessions(
+  from: number,
+  to: number
+): Promise<MediaSession[]> {
+  // Sessions can overlap from the previous day to the next. Consider a session from Aug. 6 11:30 pm
+  // to Aug. 7th 2:20 AM. We have to fetch a day prior to from and slice the canonical MediaSessions to contain them
+  // with a day.
+  const keys = generateDateRange(
+    new Date(removeDays(truncTime(from), 1)),
+    new Date(truncTime(to))
+  ).map((d) => d.valueOf().toString());
 
-  return canonicalSessions
-    .filter(({ start, end }) => end >= from && start < to)
-    .map((mediaSession) => {
-      let updatedSession = mediaSession;
-      const { start, end } = updatedSession;
-      if (start < from) {
-        // capture the portion of the overlapping session which occured after `from`
-        updatedSession = { ...updatedSession, start: from };
-      }
-      if (end > to) {
-        // capture the portion of the overlapping session which occured before `to`
-        updatedSession = { ...updatedSession, end: to };
-      }
-      return updatedSession;
-    });
+  const sessionsByKey = await get(keys);
+  const canonicalSessions = Object.values(sessionsByKey).flat();
+
+  return canonicalSessions.flatMap((session) =>
+    sliceMediaSession(session, from, to)
+  );
 }
 
 export async function storeMediaEvent(event: MediaEvent) {

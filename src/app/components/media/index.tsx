@@ -18,7 +18,7 @@ function getTitle(permission: Permission.AUDIO | Permission.VIDEO) {
   return "Camera Usage";
 }
 
-function MediaUsageDashboard({ from, to, permission }: MediaDashboardProps) {
+function MediaDashboard({ from, to, permission }: MediaDashboardProps) {
   // Need to fetch information about the sessions that occured ON date 'to' as well. Hence why to: addDays(to, 1)
   // The 1 can be replaced by the time bucket: hour, day, month, if there exists one in the future
   const { status, mediaSessions } = useMediaSessions({
@@ -43,7 +43,7 @@ interface AudioDashboardProps {
 
 export function AudioDashboard({ from, to }: AudioDashboardProps) {
   return (
-    <MediaUsageDashboard from={from} to={to} permission={Permission.AUDIO} />
+    <MediaDashboard from={from} to={to} permission={Permission.AUDIO} />
   );
 }
 
@@ -54,6 +54,6 @@ interface VideoDashboardProps {
 
 export function VideoDashboard({ from, to }: VideoDashboardProps) {
   return (
-    <MediaUsageDashboard from={from} to={to} permission={Permission.VIDEO} />
+    <MediaDashboard from={from} to={to} permission={Permission.VIDEO} />
   );
 }
