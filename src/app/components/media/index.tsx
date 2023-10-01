@@ -26,10 +26,10 @@ function MediaDashboard({ from, to, permission }: MediaDashboardProps) {
     to: addDays(to, 1),
     mediaPermission: permission,
   });
-  
+
   return (
-    <div className="stat-container chart-container">
-      <div className="stat-label">{getTitle(permission)}</div>
+    <div className="media-dashboard">
+      <div className="media-dashboard-title">{getTitle(permission)}</div>
       <MediaChart from={from} to={to} mediaSessions={mediaSessions} />
       <MediaTable from={from} to={to} mediaSessions={mediaSessions} />
     </div>
@@ -42,9 +42,7 @@ interface AudioDashboardProps {
 }
 
 export function AudioDashboard({ from, to }: AudioDashboardProps) {
-  return (
-    <MediaDashboard from={from} to={to} permission={Permission.AUDIO} />
-  );
+  return <MediaDashboard from={from} to={to} permission={Permission.AUDIO} />;
 }
 
 interface VideoDashboardProps {
@@ -53,7 +51,5 @@ interface VideoDashboardProps {
 }
 
 export function VideoDashboard({ from, to }: VideoDashboardProps) {
-  return (
-    <MediaDashboard from={from} to={to} permission={Permission.VIDEO} />
-  );
+  return <MediaDashboard from={from} to={to} permission={Permission.VIDEO} />;
 }

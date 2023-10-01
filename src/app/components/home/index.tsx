@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { createDateRangeFromNow } from "../../util";
 import { Permission } from "../../../shared/interface";
 import { AudioDashboard, VideoDashboard } from "../media";
 import { usePeriod } from "../../hooks/use-period";
-import "./home.css";
 import { PermissionSelect } from "../filter/permission-select";
 import { DatePeriodPicker } from "../filter/date-period-select";
+import * as Icon from "react-feather";
+import { isDark, swap, ThemeContext } from "../../context/theme";
+import "./home.css";
 
 interface DashboardProps {
   from: number;
@@ -26,14 +28,14 @@ function Home() {
   const { from: initialFrom, to: initialTo } = createDateRangeFromNow(6);
   const { period, setFrom, setTo } = usePeriod({ initialTo, initialFrom });
   const [permission, setPermission] = useState<Permission>(Permission.AUDIO);
+  const { theme, setTheme } = useContext(ThemeContext);
   const { from, to } = period;
 
   return (
     <>
       <div className="container">
         <div className="menu-container">
-          <h2>Analytics</h2>
-          <div className="select-containers">
+          <div className="filters-container">
             <PermissionSelect
               permission={permission}
               onSelectPermission={setPermission}
@@ -44,6 +46,18 @@ function Home() {
               onSelectFrom={setFrom}
               onSelectTo={setTo}
             />
+          </div>
+          <div className="nav-container">
+            <a>
+              {isDark() ? (
+                <Icon.Sun onClick={() => swap(setTheme)} className="icon" />
+              ) : (
+                <Icon.Moon onClick={() => swap(setTheme)} className="icon" />
+              )}
+            </a>
+            <a href="https://github.com/TanushN/permistory">
+              <Icon.GitHub />
+            </a>
           </div>
         </div>
         <Dashboard from={from} to={to} permission={permission} />

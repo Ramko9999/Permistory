@@ -54,9 +54,7 @@
 }
 
 .media-table-container {
-  max-height: 300px;
   width: 100%;
-  overflow-y: scroll;
 }
 
 .media-table-host-container {
@@ -67,4 +65,22 @@
 
 .media-table-host-icon {
   padding: 3px;
+}
+
+
+.media-dashboard {
+  background-color: var(--section-bg);
+  height: max-content;
+  border-radius: 3px;
+  padding: 1rem;
+  box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.media-dashboard-title {
+  font-size: 1rem;
+  font-weight: bold;
 }

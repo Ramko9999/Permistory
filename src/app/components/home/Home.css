@@ -3,46 +3,21 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  padding-bottom: 0.4rem;
+  padding-top: 2rem;
 }
 
-.select-containers {
+.filters-container {
   display: flex;
   gap: 1rem;
 }
 
-.stats {
+.nav-container {
   display: flex;
-  flex-direction: row;
-  margin-top: 1rem;
-  gap: 2rem;
+  gap: 0.5rem;
+  justify-content: space-around;
 }
 
-.stat {
-  margin-top: 0.2rem;
-  font-weight: bold;
-  font-size: 2rem;
-  color: var(--accent);
-}
-
-.stat-container {
-  background-color: var(--section-bg);
-  height: max-content;
-  border-radius: 3px;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06);
-}
-
-.stat-label {
-  font-size: 1rem;
-  font-weight: bold;
-}
-
-.chart-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+.icon {
+  cursor: pointer;
 }

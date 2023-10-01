@@ -1,19 +1,16 @@
 import "./App.css";
 import { useState } from "react";
-import ThemeContext, { Theme } from "./context/ThemeContext";
-import Navbar from "./components/navbar/Navbar";
+import { ThemeContext, Theme, ThemeType } from "./context/theme";
 import Home from "./components/home";
 
 function App() {
-  const [theme, setTheme] = useState("light");
-  const value = { theme, setTheme };
+  const [theme, setTheme] = useState(ThemeType.LIGHT);
   return (
     <>
-      <ThemeContext.Provider value={value as Theme}>
+      <ThemeContext.Provider value={{ theme, setTheme } as Theme}>
         <div className="app">
-          <Navbar />
           <div className="main-section">
-          <Home/>
+            <Home />
           </div>
         </div>
       </ThemeContext.Provider>
