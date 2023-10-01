@@ -20,8 +20,7 @@
   background-color: var(--section-bg);
   padding: 0.2rem;
   border-radius: 3px;
-  box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0, 0, 0, 0.1),
-    0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: 0px 0px 2px var(--box-shadow-color);
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
@@ -50,7 +49,7 @@
   border: 1px solid #dddddd;
   text-align: left;
   padding: 8px;
-  background-color: white;
+  background-color: var(--section-bg);
 }
 
 .media-table-container {
@@ -60,20 +59,19 @@
 .media-table-host-container {
   display: flex;
   flex-direction: row;
-  gap: 0.4rem;
+  gap: 0.2rem;
 }
 
 .media-table-host-icon {
   padding: 3px;
 }
 
-
 .media-dashboard {
   background-color: var(--section-bg);
   height: max-content;
   border-radius: 3px;
   padding: 1rem;
-  box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06);
+  box-shadow: 0px 0px 2px var(--box-shadow-color);
   display: flex;
   flex-direction: column;
   align-items: center;

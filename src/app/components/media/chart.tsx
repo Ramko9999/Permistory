@@ -1,8 +1,8 @@
+import { generateColor, isDark } from "../../context/theme";
 import { MediaSession } from "../../../shared/interface";
 import {
   truncTimeWithTz,
   areDatesEqual,
-  getHashedColor,
   formatDateForDashboard,
   generateDateRange,
   getTimePeriodDisplay,
@@ -85,7 +85,7 @@ function MediaChartTooltip({ active, payload, label }: MediaChartTooltipProps) {
       {hosts.length > 0
         ? hosts.map((host) => (
             <div className="media-chart-tooltip-value">
-              <strong style={{ color: getHashedColor(host) }}>{host}</strong>
+              <span style={{ color: generateColor(host) }}>{host}</span>
               <span>{getTimePeriodDisplay(point[host] as number)}</span>
             </div>
           ))
@@ -113,6 +113,11 @@ export function MediaChart({ from, to, mediaSessions }: MediaChartProps) {
       return totalPeriod;
     })
   );
+  const stroke = isDark() ? "rgb(135, 135, 135)" : "rgb(120, 120, 120)";
+  const fill = isDark() ? "rgb(225, 225, 225)" : "rgb(30, 30, 30)";
+  const tooltipBackgroundFill = isDark()
+    ? "rgba(255,124,124, 0.5)"
+    : "rgba(0,104,255, 0.5)";
 
   return (
     <div className="media-chart">
@@ -131,14 +136,23 @@ export function MediaChart({ from, to, mediaSessions }: MediaChartProps) {
             bottom: 5,
           }}
         >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="day" />
+          <CartesianGrid strokeDasharray="3 3" stroke={stroke} />
+          <XAxis
+            tick={{ fill }}
+            tickLine={{ stroke }}
+            axisLine={{ stroke }}
+            dataKey="day"
+          />
           <YAxis
             ticks={getTicks(totalPeriodByPoint)}
+            tick={{ fill }}
+            tickLine={{ stroke }}
+            axisLine={{ stroke }}
             tickFormatter={(value, _) => getTimePeriodDisplay(parseInt(value))}
           />
           <Tooltip
             filterNull={false}
+            cursor={{ fill: tooltipBackgroundFill }}
             content={
               //@ts-ignore: The props get passed in somehow...
               <MediaChartTooltip />
@@ -146,7 +160,7 @@ export function MediaChart({ from, to, mediaSessions }: MediaChartProps) {
           />
           <Legend />
           {getAllHosts(mediaSessions).map((host) => (
-            <Bar dataKey={host} stackId="stack" fill={getHashedColor(host)} />
+            <Bar dataKey={host} stackId="stack" fill={generateColor(host)} />
           ))}
         </BarChart>
       </ResponsiveContainer>

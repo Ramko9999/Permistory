@@ -24,19 +24,20 @@ html {
   --primary: black;
   --accent: #0068ff;
   --secondary: white;
-  --section-bg: #f6f8fa;
+  --section-bg: #f6f6f6;
   --secondary-accent: #999;
-  --font: "Inter", sans-serif
+  --box-shadow-color: rgba(0, 0, 0, 0.2);
+  --font: "Inter", sans-serif;
 }
 
 [data-theme="dark"] {
-  --bg: #131415;
+  --bg: #24293a;
   --primary: #fbfbfd;
   --accent: #ff7c7c;
-  --secondary: #131415;
+  --secondary: #24293a;
   --section-bg: #292d3e;
   --secondary-accent: #f6f8fa;
-  --font: "Inter", sans-serif
+  --box-shadow-color: rgba(255, 255, 255, 0.2);
 }
 
 body {

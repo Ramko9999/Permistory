@@ -1,13 +1,3 @@
-export function getHashedColor(token: string) {
-  let hash = 0;
-  for (let i = 0; i < token.length; i++) {
-    hash = token.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  hash *= 100;
-  const color = (hash & 0x00ffffff).toString(16).toUpperCase();
-  return "#" + "00000".substring(0, 6 - color.length) + color;
-}
-
 export function truncTimeWithTz(datetime: Date) {
   const updatedDatetime = new Date(datetime);
   updatedDatetime.setHours(0, 0, 0, 0);
