@@ -26,7 +26,7 @@ function MediaDashboard({ from, to, permission }: MediaDashboardProps) {
     to: addDays(to, 1),
     mediaPermission: permission,
   });
-
+  
   return (
     <div className="stat-container chart-container">
       <div className="stat-label">{getTitle(permission)}</div>

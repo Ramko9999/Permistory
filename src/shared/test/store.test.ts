@@ -76,10 +76,7 @@ describe("queryMediaSessions", () => {
       start: new Date("9/24/2023, 6:00:00 PM").valueOf(),
       end: new Date("9/25/2023, 12:00:00 PM").valueOf(),
     });
-    const sessions = await queryMediaSessions(
-      new Date("9/24/2023, 12:00:00 AM").valueOf(),
-      new Date("9/26/2023, 12:00:00 AM").valueOf()
-    );
+    const sessions = await queryMediaSessions(from, to);
     expect(sessions).toEqual([
       {
         ...baseMediaSession,
@@ -92,5 +89,15 @@ describe("queryMediaSessions", () => {
         end: new Date("9/25/2023, 12:00:00 PM").valueOf(),
       },
     ]);
+  });
+
+  it("when a session precedes the `from` and `to` by a day", async () => {
+    patchStorage({
+      ...baseMediaSession,
+      start: new Date("9/23/2023, 12:00:00 AM").valueOf(),
+      end: new Date("9/23/2023, 2:00:00 AM").valueOf(),
+    });
+    const sessions = await queryMediaSessions(from, to);
+    expect(sessions).toEqual([]);
   });
 });

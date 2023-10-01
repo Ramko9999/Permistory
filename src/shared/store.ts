@@ -77,6 +77,7 @@ function sliceMediaSession(
 ) {
   let begin = Math.max(start, from);
   const finish = Math.min(to, end);
+
   const slicePoints = generateDateRange(
     new Date(truncTimeWithTz(begin)),
     new Date(truncTimeWithTz(finish))
@@ -94,17 +95,17 @@ function sliceMediaSession(
 }
 
 /**
- * Returns media sessions which occured between `from` and `to`
+ * Returns media sessions which occured between `from` and `to` at maximum granularity of day. Sessions can overlap from
+ * the previous day to the next: 8/6 11:30pm to 8/7 3:00am. Sessions could theoretically extend beyond a day: 8/6 11:30pm to 8/7 11:47pm.
+ * In order to handle these cases, sessions from the day preceding `from` will be fetched, and sessions will be sliced by day.
  * @param from unix milliseconds
  * @param to unix milliseconds
+ * @returns a list of media sessions
  */
 export async function queryMediaSessions(
   from: number,
   to: number
 ): Promise<MediaSession[]> {
-  // Sessions can overlap from the previous day to the next. Consider a session from Aug. 6 11:30 pm
-  // to Aug. 7th 2:20 AM. We have to fetch a day prior to from and slice the canonical MediaSessions to contain them
-  // with a day.
   const keys = generateDateRange(
     new Date(removeDays(truncTime(from), 1)),
     new Date(truncTime(to))
@@ -113,9 +114,13 @@ export async function queryMediaSessions(
   const sessionsByKey = await get(keys);
   const canonicalSessions = Object.values(sessionsByKey).flat();
 
-  return canonicalSessions.flatMap((session) =>
-    sliceMediaSession(session, from, to)
-  );
+  return canonicalSessions
+    .filter(
+      ({ start, end }) =>
+        // this has be to true if the session occured within `from` and `to`.
+        Math.max(start, from) < Math.min(end, to)
+    )
+    .flatMap((session) => sliceMediaSession(session, from, to));
 }
 
 export async function storeMediaEvent(event: MediaEvent) {
