@@ -77,7 +77,11 @@ function MediaChartTooltip({ active, payload, label }: MediaChartTooltipProps) {
   }
 
   const point = payload[0].payload;
-  const hosts = Object.keys(point).filter((key) => key !== "day");
+  const hosts = Object.keys(point)
+    .filter((key) => key !== "day")
+    .sort(
+      (host1, host2) => (point[host2] as number) - (point[host1] as number)
+    );
 
   return (
     <div className="media-chart-tooltip">
