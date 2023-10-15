@@ -13,7 +13,7 @@ describe("queryMediaSessions", () => {
   function patchStorage(...mediaSessions: MediaSession[]) {
     const byKey: { [index: string]: MediaSession[] } = {};
     mediaSessions.forEach((session) => {
-      const key = truncTime(session.start);
+      const key = `${session.permission}_${truncTime(session.start)}`;
       if (!(key in byKey)) {
         byKey[key] = [];
       }
@@ -45,7 +45,7 @@ describe("queryMediaSessions", () => {
 
   it("when a session completes within the same day", async () => {
     patchStorage(baseMediaSession);
-    const sessions = await queryMediaSessions(from, to);
+    const sessions = await queryMediaSessions(from, to, Permission.AUDIO);
     expect(sessions).toEqual([baseMediaSession]);
   });
 
@@ -55,7 +55,7 @@ describe("queryMediaSessions", () => {
       start: new Date("9/23/2023, 6:00:00 PM").valueOf(),
       end: new Date("9/26/2023, 6:00:00 PM").valueOf(),
     });
-    const sessions = await queryMediaSessions(from, to);
+    const sessions = await queryMediaSessions(from, to, Permission.AUDIO);
     expect(sessions).toEqual([
       {
         ...baseMediaSession,
@@ -76,7 +76,7 @@ describe("queryMediaSessions", () => {
       start: new Date("9/24/2023, 6:00:00 PM").valueOf(),
       end: new Date("9/25/2023, 12:00:00 PM").valueOf(),
     });
-    const sessions = await queryMediaSessions(from, to);
+    const sessions = await queryMediaSessions(from, to, Permission.AUDIO);
     expect(sessions).toEqual([
       {
         ...baseMediaSession,
@@ -97,7 +97,7 @@ describe("queryMediaSessions", () => {
       start: new Date("9/23/2023, 12:00:00 AM").valueOf(),
       end: new Date("9/23/2023, 2:00:00 AM").valueOf(),
     });
-    const sessions = await queryMediaSessions(from, to);
+    const sessions = await queryMediaSessions(from, to, Permission.AUDIO);
     expect(sessions).toEqual([]);
   });
 });

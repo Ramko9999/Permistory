@@ -1,5 +1,5 @@
 import { generateDateRange } from "../app/util";
-import { MediaEvent, MediaEventType, MediaSession } from "./interface";
+import { MediaEvent, MediaEventType, MediaSession, Permission } from "./interface";
 import { truncTime, truncTimeWithTz, removeDays } from "./util";
 
 type MediaSessionsByKey = { [index: string]: MediaSession[] };
@@ -14,12 +14,12 @@ async function put(key: string, sessions: MediaSession[]) {
   return await chrome.storage.local.set(update);
 }
 
-function getStorageKey({ sessionStart }: MediaEvent) {
-  return truncTime(sessionStart).toString();
+function getStorageKey(sessionStart: number, permission: Permission){
+  return `${permission}_${truncTime(sessionStart)}`;
 }
 
 export async function createMediaSession(event: MediaEvent) {
-  const key = getStorageKey(event);
+  const key = getStorageKey(event.sessionStart, event.permission);
   const sessionsByKey = await get([key]);
   console.log("CreateMediaSession", sessionsByKey);
   let sessions: MediaSession[] = [];
@@ -38,7 +38,7 @@ export async function createMediaSession(event: MediaEvent) {
 }
 
 async function updateMediaSesssion(event: MediaEvent) {
-  const key = getStorageKey(event);
+  const key = getStorageKey(event.sessionStart, event.permission);
   const sessionsByKey = await get([key]);
   if (!(key in sessionsByKey)) {
     console.error(
@@ -100,16 +100,18 @@ function sliceMediaSession(
  * In order to handle these cases, sessions from the day preceding `from` will be fetched, and sessions will be sliced by day.
  * @param from unix milliseconds
  * @param to unix milliseconds
+ * @param permission permission
  * @returns a list of media sessions
  */
 export async function queryMediaSessions(
   from: number,
-  to: number
+  to: number,
+  permission: Permission
 ): Promise<MediaSession[]> {
   const keys = generateDateRange(
     new Date(removeDays(truncTime(from), 1)),
     new Date(truncTime(to))
-  ).map((d) => d.valueOf().toString());
+  ).map((d) => getStorageKey(d.valueOf(), permission));
 
   const sessionsByKey = await get(keys);
   const canonicalSessions = Object.values(sessionsByKey).flat();

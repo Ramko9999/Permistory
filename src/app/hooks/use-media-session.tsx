@@ -28,7 +28,7 @@ export function useMediaSessions({
   const [sessions, setSessions] = useState<MediaSession[]>([]);
   useEffect(() => {
     setStatus(RequestStatus.LOADING);
-    queryMediaSessions(from, to)
+    queryMediaSessions(from, to, mediaPermission)
       .then((sessions) => {
         setStatus(RequestStatus.SUCCESS);
         setSessions(
