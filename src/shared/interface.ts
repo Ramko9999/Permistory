@@ -33,3 +33,7 @@ export interface LocationEvent extends PermissionEvent {
   host: string;
   timestamp: number;
 }
+
+export interface Settings {
+  isDarkMode: boolean;
+}

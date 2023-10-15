@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { createDateRangeFromNow } from "../../util";
 import { Permission } from "../../../shared/interface";
 import { AudioDashboard, VideoDashboard } from "../media";
@@ -6,8 +6,9 @@ import { usePeriod } from "../../hooks/use-period";
 import { PermissionSelect } from "../filter/permission-select";
 import { DatePeriodPicker } from "../filter/date-period-select";
 import * as Icon from "react-feather";
-import { isDark, swap, ThemeContext } from "../../context/theme";
+import { applyTheme, Theme } from "../../util/theme";
 import "./home.css";
+import { SettingsContext } from "../../context/settings";
 
 interface DashboardProps {
   from: number;
@@ -28,8 +29,17 @@ function Home() {
   const { from: initialFrom, to: initialTo } = createDateRangeFromNow(6);
   const { period, setFrom, setTo } = usePeriod({ initialTo, initialFrom });
   const [permission, setPermission] = useState<Permission>(Permission.AUDIO);
-  const { theme, setTheme } = useContext(ThemeContext);
+  const { settings, persistSettings } = useContext(SettingsContext);
+  const { isDarkMode } = settings;
   const { from, to } = period;
+
+  useEffect(() => {
+    if (isDarkMode) {
+      applyTheme(Theme.DARK);
+    } else {
+      applyTheme(Theme.LIGHT);
+    }
+  }, [isDarkMode]);
 
   return (
     <>
@@ -49,10 +59,20 @@ function Home() {
           </div>
           <div className="nav-container">
             <a>
-              {isDark() ? (
-                <Icon.Sun onClick={() => swap(setTheme)} className="icon" />
+              {isDarkMode ? (
+                <Icon.Sun
+                  onClick={() =>
+                    persistSettings({ ...settings, isDarkMode: false })
+                  }
+                  className="icon"
+                />
               ) : (
-                <Icon.Moon onClick={() => swap(setTheme)} className="icon" />
+                <Icon.Moon
+                  onClick={() =>
+                    persistSettings({ ...settings, isDarkMode: true })
+                  }
+                  className="icon"
+                />
               )}
             </a>
             <a href="https://github.com/TanushN/permistory">

@@ -1,19 +1,31 @@
 import "./App.css";
-import { useState } from "react";
-import { ThemeContext, Theme, ThemeType } from "./context/theme";
+import { useState, useEffect } from "react";
+import { Theme } from "./util/theme";
 import Home from "./components/home";
+import { baseSettings, getSettings, putSettings } from "../shared/settings";
+import { Settings } from "../shared/interface";
+import { SettingsContext } from "./context/settings";
 
 function App() {
-  const [theme, setTheme] = useState(ThemeType.LIGHT);
+  const [settings, setSettings] = useState(baseSettings);
+
+  useEffect(() => {
+    getSettings().then(setSettings);
+  }, []);
+
+  const persistSettings = (settings: Settings) => {
+    putSettings(settings).then(setSettings);
+  };
+
   return (
     <>
-      <ThemeContext.Provider value={{ theme, setTheme } as Theme}>
-        <div className="app">
-          <div className="main-section">
-            <Home />
+      <SettingsContext.Provider value={{ settings, persistSettings }}>
+          <div className="app">
+            <div className="main-section">
+              <Home />
+            </div>
           </div>
-        </div>
-      </ThemeContext.Provider>
+      </SettingsContext.Provider>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { generateColor, isDark } from "../../context/theme";
+import { generateColor } from "../../util/theme";
 import { MediaSession } from "../../../shared/interface";
 import {
   truncTimeWithTz,
@@ -18,6 +18,8 @@ import {
   Legend,
   Bar,
 } from "recharts";
+import { useContext } from "react";
+import { SettingsContext } from "../../context/settings";
 
 function getAllHosts(mediaSessions: MediaSession[]) {
   return Array.from(new Set(mediaSessions.map(({ host }) => host)));
@@ -72,6 +74,9 @@ interface MediaChartTooltipProps {
 }
 
 function MediaChartTooltip({ active, payload, label }: MediaChartTooltipProps) {
+  const { settings } = useContext(SettingsContext);
+  const { isDarkMode } = settings;
+
   if (!active) {
     return null;
   }
@@ -89,7 +94,9 @@ function MediaChartTooltip({ active, payload, label }: MediaChartTooltipProps) {
       {hosts.length > 0
         ? hosts.map((host) => (
             <div className="media-chart-tooltip-value">
-              <span style={{ color: generateColor(host) }}>{host}</span>
+              <span style={{ color: generateColor(host, isDarkMode) }}>
+                {host}
+              </span>
               <span>{getTimePeriodDisplay(point[host] as number)}</span>
             </div>
           ))
@@ -117,9 +124,12 @@ export function MediaChart({ from, to, mediaSessions }: MediaChartProps) {
       return totalPeriod;
     })
   );
-  const stroke = isDark() ? "rgb(135, 135, 135)" : "rgb(120, 120, 120)";
-  const fill = isDark() ? "rgb(225, 225, 225)" : "rgb(30, 30, 30)";
-  const tooltipBackgroundFill = isDark()
+  const { settings } = useContext(SettingsContext);
+  const { isDarkMode } = settings;
+
+  const stroke = isDarkMode ? "rgb(135, 135, 135)" : "rgb(120, 120, 120)";
+  const fill = isDarkMode ? "rgb(225, 225, 225)" : "rgb(30, 30, 30)";
+  const tooltipBackgroundFill = isDarkMode
     ? "rgba(255,124,124, 0.5)"
     : "rgba(0,104,255, 0.5)";
 
@@ -164,7 +174,11 @@ export function MediaChart({ from, to, mediaSessions }: MediaChartProps) {
           />
           <Legend />
           {getAllHosts(mediaSessions).map((host) => (
-            <Bar dataKey={host} stackId="stack" fill={generateColor(host)} />
+            <Bar
+              dataKey={host}
+              stackId="stack"
+              fill={generateColor(host, isDarkMode)}
+            />
           ))}
         </BarChart>
       </ResponsiveContainer>
